@@ -23,7 +23,7 @@ class TestOpenAIEngine < Minitest::Test
 
   def test_base_defaults_and_options
     base = Narou::Translator::Base.new
-    assert_equal 2500, base.chunk_size
+    assert_equal 1500, base.chunk_size
     assert_equal 3, base.max_retries
 
     custom = Narou::Translator::Base.new(chunk_size: 1000, max_retries: 5)

@@ -51,7 +51,7 @@ module Narou
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = (uri.scheme == "https")
           http.open_timeout = 30
-          http.read_timeout = 180
+          http.read_timeout = 600
 
           res = http.request(req)
           unless res.is_a?(Net::HTTPSuccess)

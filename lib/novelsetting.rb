@@ -79,6 +79,8 @@ class NovelSetting
     ini = load_setting_ini
     force_settings = @ignore_force ? {} : NovelSetting.load_force_settings
     default_settings = @ignore_default ? {} : NovelSetting.load_default_settings
+    local_settings = (Inventory.load("local_setting", :local) rescue {}) || {}
+    global_settings = (Inventory.load("global_setting", :global) rescue {}) || {}
     ORIGINAL_SETTINGS.each do |element|
       name, value, type = element[:name], element[:value], element[:type]
       if force_settings.include?(name)
@@ -87,6 +89,10 @@ class NovelSetting
         @settings[name] = ini["global"][name]
       elsif default_settings.include?(name)
         @settings[name] = default_settings[name]
+      elsif local_settings.include?(name) && type_eq_value(type, local_settings[name])
+        @settings[name] = local_settings[name]
+      elsif global_settings.include?(name) && type_eq_value(type, global_settings[name])
+        @settings[name] = global_settings[name]
       else
         @settings[name] = value
       end

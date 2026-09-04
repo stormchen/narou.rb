@@ -3,7 +3,7 @@
 module Narou
   module Translator
     class Base
-      DEFAULT_CHUNK_SIZE = 2500
+      DEFAULT_CHUNK_SIZE = 1500
       DEFAULT_MAX_RETRIES = 3
 
       attr_reader :options, :chunk_size, :max_retries
