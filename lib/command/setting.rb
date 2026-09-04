@@ -320,18 +320,18 @@ module Command
       general: "一般",
       detail: "詳細",
       webui: "WEB UI",
-      global: "Global",
+      global: "全域 (Global)",
       default: "default.*",
       force: "force.*",
-      command: "コマンド",
+      command: "命令列參數",
     }
 
     SETTING_TAB_INFO = {
-      webui: "WEB UI 専用の設定です",
-      global: "Global な設定はユーザープロファイルに保存され、すべての narou コマンドで使われます",
-      default: "default.* 系の設定は個別の変換設定で未設定の項目の挙動を指定することが出来ます",
-      force: "force.* 系の設定は個別設定、default.* 等の設定を無視して反映されるようになります",
-      command: "default_args.* 系の設定は、各種コマンドのオプションを省略した場合に使用されるオプションを指定出来ます",
+      webui: "WEB UI 專屬設定",
+      global: "全域設定（Global）會儲存在使用者設定檔中，並在所有 narou 指令中生效",
+      default: "default.* 系列設定可用於指定個別轉換設定中未設定項目的預設行為",
+      force: "force.* 系列設定會強制覆蓋個別設定與 default.* 等設定並優先套用",
+      command: "default_args.* 系列設定可用於指定各種指令在省略選項時所使用的預設選項",
     }
 
     SETTING_VARIABLES = {

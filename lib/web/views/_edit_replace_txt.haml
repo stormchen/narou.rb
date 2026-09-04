@@ -35,9 +35,9 @@
         %table#replace-txt-table
           %thead
             %tr
-              %td 対象文字列
+              %td 目標字串
               %td &nbsp;
-              %td 置き換える文字列
+              %td 替換後字串
               %td &nbsp;
           %tbody
             -# 末尾に新規入力用の空要素を追加
@@ -50,10 +50,10 @@
                 %td
                   %input{type:"text", name:"replace_pattern[][right]", value:pattern[1], class:"form-control"}
                 %td
-                  %button.btn-replace-remove.btn.btn-default(data-toggle="remove-tooltip" title="削除" data-placement="right")
+                  %button.btn-replace-remove.btn.btn-default(data-toggle="remove-tooltip" title="刪除" data-placement="right")
                     %span.glyphicon.glyphicon-remove
             %tr
               %td(colspan=4)
-                %button#btn-replace-add.btn.btn-default(data-toggle="tooltip" title="１行追加" data-placement="right")
+                %button#btn-replace-add.btn.btn-default(data-toggle="tooltip" title="新增一行" data-placement="right")
                   %span.glyphicon.glyphicon-plus
 

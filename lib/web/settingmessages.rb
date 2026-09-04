@@ -8,25 +8,25 @@ module Narou
   # WEB UI > 環境設定画面で表示する各項目の説明
   # ここになければ元々の説明が表示される
   SETTING_VARIABLES_WEBUI_MESSAGES = {
-    "convert.multi-device" => "複数の端末用に同時に変換する。deviceよりも優先される。\nただのEPUBを出力したい場合はepubを指定",
-    "device" => "変換、送信対象の端末",
-    "difftool" => "%%ORIG%%。※WEB UIでは使われません",
-    "update.sort-by" => "アップデートを指定した項目順で行う",
-    "default.title_date_align" => "enable_add_date_to_title で付与する日付の位置",
-    "force.title_date_align" => "enable_add_date_to_title で付与する日付の位置",
-    "difftool.arg" => "difftoolで使う引数(指定しなければ単純に新旧ファイルを引数に呼び出す)\n" \
-                      "特殊な変数\n" \
-                      "<b>%NEW</b> : 最新データの差分用ファイルパス\n" \
-                      "<b>%OLD</b> : 古い方の差分用ファイルパス",
-    "no-color" => "コンソールのカラー表示を無効にする\n※要サーバ再起動",
-    "economy" => "容量節約に関する設定",
-    "send.without-freeze" => "一括送信時に凍結された小説は対象外にする。（個別送信時は凍結済みでも送信可能）",
-    "server-digest-auth.enable" => "%%ORIG%%\n※digest-auth関連の設定を変更した場合サーバの再起動が必要",
-    "server-digest-auth.hashed-password" => "サーバのDigest認証のパスワードを、Realmを\"narou.rb\"としてハッシュにしたもの。\n" \
-                                            "https://tgws.plus/app/digest/ などで生成できる",
-    "concurrency" => "%%ORIG%% ※要サーバ再起動",
-    "logging" => "%%ORIG%%\n※要サーバ再起動",
-    "logging.format-filename" => "%%ORIG%%\n※要サーバ再起動",
-    "logging.format-timestamp" => "%%ORIG%%\n※要サーバ再起動",
+    "convert.multi-device" => "同時轉換成多個裝置適用的格式。優先度高於 device。\n若只想輸出一般 EPUB 請指定 epub",
+    "device" => "轉換與傳送的目標裝置",
+    "difftool" => "%%ORIG%%。※WEB UI 中不使用",
+    "update.sort-by" => "依指定項目順序進行更新",
+    "default.title_date_align" => "enable_add_date_to_title 加入日期的顯示位置",
+    "force.title_date_align" => "enable_add_date_to_title 加入日期的顯示位置",
+    "difftool.arg" => "difftool 使用的參數（若未指定，則單純以新舊檔案為參數呼叫）\n" \
+                      "特殊變數\n" \
+                      "<b>%NEW</b> : 最新資料的差異檔案路徑\n" \
+                      "<b>%OLD</b> : 舊資料的差異檔案路徑",
+    "no-color" => "停用終端機彩色文字顯示\n※需重啟伺服器",
+    "economy" => "容量節省相關設定",
+    "send.without-freeze" => "批次傳送時排除已凍結的小說（個別傳送時即使已凍結仍可傳送）",
+    "server-digest-auth.enable" => "%%ORIG%%\n※若修改 digest-auth 相關設定需重啟伺服器",
+    "server-digest-auth.hashed-password" => "伺服器 Digest 認證的密碼雜湊值（Realm 為 \"narou.rb\"）。\n" \
+                                            "可於 https://tgws.plus/app/digest/ 等網站產生",
+    "concurrency" => "%%ORIG%% ※需重啟伺服器",
+    "logging" => "%%ORIG%%\n※需重啟伺服器",
+    "logging.format-filename" => "%%ORIG%%\n※需重啟伺服器",
+    "logging.format-timestamp" => "%%ORIG%%\n※需重啟伺服器",
   }
 end

@@ -11,102 +11,102 @@
       %ul.nav.navbar-nav
         %li.dropdown
           %a.dropdown-toggle(data-toggle="dropdown" href="#")
-            表示
+            顯示
             %span.caret
           %ul.dropdown-menu(role="menu")
             %li#action-view-all
-              %a(href="#") 全ての項目を表示
+              %a(href="#") 顯示全部欄位
             %li#action-view-setting
-              %a(href="#") 表示する項目を設定
+              %a(href="#") 設定顯示欄位
             %li.divider
             %li#action-view-novel-list-wide
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  小説リストの幅を広げる
+                  加寬小說清單
                 %span.shortcut W
             %li.divider
             %li#action-view-nonfrozen
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  凍結中以外を表示
+                  顯示未凍結小說
                 %span.shortcut Shift+F
             %li#action-view-frozen
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  凍結中を表示
+                  顯示已凍結小說
                 %span.shortcut F
             %li.divider
             %li#action-view-toggle-setting-page-open-new-tab
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  変換設定ページは新規タブで開く
+                  轉換設定頁於新分頁開啟
             %li.divider
             %li#action-view-toggle-buttons-show-page-top
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  ボタンをページ上部に表示
+                  按鈕顯示於頁面上方
             %li#action-view-toggle-buttons-fix-footer
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  ボタンを画面下部に表示
+                  按鈕顯示於畫面底部
             %li.divider
             %li#action-view-link-to-edit-menu
               %a(href="/edit_menu")
                 %span
-                  個別メニューを編集...
+                  編輯個別選單...
             %li#action-view-select-menu-style
               %a(href="#")
                 %span
-                  個別メニューの表示スタイルを選択
+                  選擇個別選單樣式
             %li.divider
             %li#action-view-reset
-              %a(href="/") 表示設定を全てリセット
+              %a(href="/") 重設所有顯示設定
         %li.dropdown
           %a.dropdown-toggle(data-toggle="dropdown" href="#")
-            選択
+            選取
             %span#badge-number-of-selecting.badge 0
             %span.caret
           %ul.dropdown-menu-wide.dropdown-menu(role="menu")
             %li#action-select-view
               %a(href="#")
-                %span 表示されている小説を選択
+                %span 選取目前顯示的小說
                 %span.shortcut Ctrl+A
             %li#action-select-all
               %a(href="#")
-                %span 全ての小説を選択
+                %span 選取所有小說
                 %span.shortcut Shift+A
             %li#action-select-clear
               %a(href="#")
-                %span 選択を全て解除
+                %span 取消所有選取
                 %span.shortcut ESC
             %li.divider
             %li#action-select-mode-single
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  シングル選択モード
+                  單選模式
                 %span.shortcut S
             %li#action-select-mode-rect
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  範囲選択モード
+                  範圍選取模式
                 %span.shortcut R
             %li#action-select-mode-hybrid
               %a(href="#")
                 %span
                   %span.active-ok.glyphicon.glyphicon-ok
-                  ハイブリッド選択モード
+                  混合選取模式
                 %span.shortcut H
         %li.dropdown
           %a.dropdown-toggle(data-toggle="dropdown" href="#")
-            タグ
+            標籤
             %span.caret
           %ul.dropdown-menu(role="menu")
             %li
@@ -116,41 +116,41 @@
               %a(href="#")
                 %span
                   %span
-                    選択した小説のタグを編集
+                    編輯所選小說的標籤
                 %span.shortcut T
         %li.dropdown
           %a.dropdown-toggle(data-toggle="dropdown" href="#")
-            ツール
+            工具
             %span.caret
           %ul.dropdown-menu(role="menu")
             %li#action-tool-open-dnd-window
               %a(href="#")
                 %span
-                  D&amp;Dウィンドウを開く
+                  開啟拖放 (D&amp;D) 視窗
             %li.divider
             %li#action-tool-csv-download
               %a(href="#")
                 %span
-                  CSV形式でリストをダウンロード
+                  以 CSV 格式下載清單
             %li#action-tool-csv-import
               %a(href="#")
                 %span
-                  CSVファイルからインポート
+                  從 CSV 檔案匯入
             %li.divider
             %li#action-tool-notepad
               %a(href="/notepad")
                 %span
-                  メモ帳（別ページ）
+                  記事本（獨立頁面）
             %li#action-tool-notepad-window
               %a(href="#")
                 %span
-                  メモ帳（ポップアップ）
+                  記事本（彈跳視窗）
       %ul.nav.navbar-nav.navbar-right
         %li.dropdown
           %a.dropdown-toggle(data-toggle="dropdown" href="#")
             %span.glyphicon.glyphicon-cog.hidden-xs
             %span.visible-xs-inline
-              オプション
+              選項
             %span.caret
           %ul.dropdown-menu(role="menu")
             %li#action-option-settings
@@ -163,23 +163,23 @@
               %a(href="/help")
                 %span
                   %span.glyphicon.glyphicon-question-sign
-                  ヘルプ...
+                  說明...
             %li#action-option-about
               %a(href="#")
                 %span
                   %span.glyphicon.glyphicon-info-sign
-                  Narou.rb について
+                  關於 Narou.rb
             %li.divider
             %li#action-option-server-reboot
               %a(href="#")
                 %span
                   %span.glyphicon.glyphicon-refresh
-                  サーバを再起動
+                  重啟伺服器
             %li#action-option-server-shutdown
               %a(href="#")
                 %span
                   %span.glyphicon.glyphicon-off
-                  サーバをシャットダウン
+                  關閉伺服器
       = partial :queue
       .navbar-form.navbar-right(role="search")
         .form-group
@@ -198,21 +198,21 @@
       %button.close(type="button" data-dismiss="alert")
         %span(aria-hidden="true") &times;
         %span.sr-only Close
-      %h2 Welcome to Narou.rb WEB UI
-      %p 最初に簡単な操作説明があるヘルプをご覧下さい。なお、このメッセージは今回のみ表示されます。
+      %h2 歡迎使用 Narou.rb WEB UI
+      %p 請先參閱說明以了解簡易操作。本提示僅於首次造訪時顯示。
       %p(style="margin-top:20px")
-        %a.btn.btn-primary(href="/help" role="button") ヘルプを見る &raquo;
+        %a.btn.btn-primary(href="/help" role="button") 查看說明 &raquo;
 
   -# コンソール
   #console-container
     - console_stdout = capture_haml do
       #console.console
       #console-buttons.console-buttons
-        %span.queue-cancel.glyphicon.glyphicon-remove-circle(data-toggle="tooltip" title="処理を中断")
-        %span.console-history.glyphicon.glyphicon-cloud-download(data-toggle="tooltip" title="全ての履歴を取得")
-        %span.console-trash.glyphicon.glyphicon-trash(data-toggle="tooltip" title="表示と履歴を削除")
+        %span.queue-cancel.glyphicon.glyphicon-remove-circle(data-toggle="tooltip" title="中斷處理")
+        %span.console-history.glyphicon.glyphicon-cloud-download(data-toggle="tooltip" title="取得全部歷程")
+        %span.console-trash.glyphicon.glyphicon-trash(data-toggle="tooltip" title="清除畫面與歷程")
         %span.console-expand
-          %span.glyphicon.glyphicon-resize-full(data-toggle="tooltip" title="拡大")
+          %span.glyphicon.glyphicon-resize-full(data-toggle="tooltip" title="放大")
           %span.glyphicon.glyphicon-resize-small.hide(data-toggle="tooltip" title="縮小")
     - if Narou.concurrency_enabled?
       .row
@@ -228,13 +228,13 @@
     .control-panel-inner
       .btn-group
         %button.button-download.btn.btn-primary(type="button" data-toggle="tooltip" |
-                                title="新規ダウンロード") Download |
+                                title="下載新小說") Download |
         %button.btn.btn-primary.dropdown-toggle(type="button" data-toggle="dropdown")
           %span.caret
           %span.sr-only Toggle Dropdown
         %ul.dropdown-menu(role="menu")
           %li
-            %a.button-download-force(href="#") 選択した小説を強制再ダウンロード
+            %a.button-download-force(href="#") 強制重新下載所選小說
       .btn-group
         %button.button-update.btn.btn-success(type="button" data-toggle="tooltip") Update
         %button.btn.btn-success.dropdown-toggle(type="button" data-toggle="dropdown")
@@ -242,29 +242,29 @@
           %span.sr-only Toggle Dropdown
         %ul.dropdown-menu(role="menu")
           %li
-            %a.button-update-general-lastup(href="#") 最新話掲載日を確認
+            %a.button-update-general-lastup(href="#") 檢查最新話發表日
           %li
-            %a.button-update-by-tag(href="#") タグを指定して更新
+            %a.button-update-by-tag(href="#") 依標籤更新小說
           %li
-            %a.button-update-view(href="#") 表示されている小説を更新
+            %a.button-update-view(href="#") 更新目前顯示的小說
           %li
-            %a.button-update-force(href="#") 凍結済みでも更新
+            %a.button-update-force(href="#") 已凍結小說亦執行更新
       .btn-group
-        %button.button-update-general-lastup-narou.btn.btn-success(type="button" data-toggle="tooltip" title="最新話掲載日をなろうAPIで確認")
+        %button.button-update-general-lastup-narou.btn.btn-success(type="button" data-toggle="tooltip" title="透過成為小說家吧 API 檢查最新話")
           な
-        %button.button-update-general-lastup-other.btn.btn-success(type="button" data-toggle="tooltip" title="その他の小説の最新話掲載日を確認")
+        %button.button-update-general-lastup-other.btn.btn-success(type="button" data-toggle="tooltip" title="檢查其他小說最新話發表日")
           他
-        %button.button-update-general-lastup-update-modified.btn.btn-success(type="button" data-toggle="tooltip" title="modifiedタグが付いた小説を更新")
+        %button.button-update-general-lastup-update-modified.btn.btn-success(type="button" data-toggle="tooltip" title="更新帶有 modified 標籤的小說")
           %span.glyphicon.glyphicon-refresh
       .btn-group
         %button.button-send.btn.btn-warning(type="button" data-toggle="tooltip") Send
         :ruby
           menus = []
           if Inventory.load["hotentry"]
-            menus << ["button-send-hotentry", "hotentry を送信"]
+            menus << ["button-send-hotentry", "傳送 hotentry"]
           end
           if Inventory.load["device"] == "kindle"
-            menus << ["button-send-backup-bookmark", "端末の栞データをバックアップ"]
+            menus << ["button-send-backup-bookmark", "備份裝置書籤資料"]
           end
         - unless menus.empty?
           %button.btn.btn-warning.dropdown-toggle(type="button" data-toggle="dropdown")
@@ -281,15 +281,15 @@
           %span.sr-only Toggle Dropdown
         %ul.dropdown-menu(role="menu")
           %li
-            %a.button-freeze-on(href="#") 選択した小説を凍結
+            %a.button-freeze-on(href="#") 凍結所選小說
           %li
-            %a.button-freeze-off(href="#") 選択した小説の凍結を解除
+            %a.button-freeze-off(href="#") 解除所選小說凍結
       .btn-group
         %button.button-remove.btn.btn-danger.enable-selected(type="button" data-toggle="tooltip" |
-                              title="選択した小説を削除") Remove |
+                              title="刪除所選小說") Remove |
       .btn-group
         %button.button-convert.btn.btn-default.enable-selected(type="button" data-toggle="tooltip" |
-                              title="選択した小説を変換") Convert |
+                              title="轉換所選小說") Convert |
       .btn-group
         %button.btn.btn-default.dropdown-toggle.enable-selected(type="button" data-toggle="dropdown")
           Other
@@ -297,26 +297,26 @@
           %span.sr-only Toggle Dropdown
         %ul.dropdown-menu(role="menu")
           %li
-            %a.button-diff(href="#") 選択した小説の最新の差分を表示
+            %a.button-diff(href="#") 顯示所選小說最新差異
           %li
-            %a.button-inspect(href="#") 選択した小説の調査状況ログを表示
+            %a.button-inspect(href="#") 顯示所選小說調查日誌
           %li
-            %a.button-folder(href="#") 選択した小説の保存フォルダを開く
+            %a.button-folder(href="#") 開啟所選小說儲存資料夾
           %li
-            %a.button-backup(href="#") 選択した小説のバックアップを作成
+            %a.button-backup(href="#") 建立所選小說備份
           %li
-            %a.button-setting-burn(href="#") 選択した小説の設定の未設定項目に共通設定を焼付ける
+            %a.button-setting-burn(href="#") 將通用設定寫入所選小說的未設定項目
           %li
-            %a.button-mail(href="#") 選択した小説をメールで送信
+            %a.button-mail(href="#") 以電子郵件傳送所選小說
       .btn-group.eject-group.hide
-        %button.button-eject.btn.btn-default(type="button" data-toggle="tooltip" title="端末を取り出す")
+        %button.button-eject.btn.btn-default(type="button" data-toggle="tooltip" title="退出裝置")
           Eject
         %button.btn.btn-default.dropdown-toggle(type="button" data-toggle="dropdown")
           %span.caret
           %span.sr-only Toggle Dropdown
         %ul.dropdown-menu(role="menu")
           %li
-            %a.button-eject-now(href="#") 今すぐ端末を取り出す
+            %a.button-eject-now(href="#") 立即退出裝置
 
 .container.container-main.theme-showcase#novel-list-container(role="main")
   -# 小説の一覧テーブル
@@ -327,13 +327,13 @@
 -# 範囲選択後に表示するメニュー
 %ul#rect-select-menu.dropdown-menu(role="menu")
   %li#rect-select-menu-select
-    %a(href="#") 選択
+    %a(href="#") 選取
   %li#rect-select-menu-clear
-    %a(href="#") 解除
+    %a(href="#") 取消選取
   %li#rect-select-menu-reverse
-    %a(href="#") 反転
+    %a(href="#") 反向選取
   %li#rect-select-menu-cancel
-    %a(href="#") キャンセル
+    %a(href="#") 取消
 
 %ul#select-color-menu.dropdown-menu(role="menu")
   %li

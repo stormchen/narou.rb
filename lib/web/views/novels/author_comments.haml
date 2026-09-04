@@ -13,16 +13,16 @@
   %h1= @data["title"]
   %ul
     %li
-      まえがき率
+      前言出現率
       = @introductions_ratio
       \%
     %li
-      あとがき率
+      後記出現率
       = @postscripts_ratio
       \%
     %li
       %a{ href: "./setting#enable_author_comments" }
-        まえがき・あとがき削除設定へ飛ぶ
+        前往前言／後記刪除設定
 
   %table.table.table-striped
     - @comments.each do |comment|
@@ -31,8 +31,8 @@
           %dl
             %dd= comment[:sub]["subtitle"]
 
-            %dt まえがき
+            %dt 前言
             %dd.indent= html.ln_to_br(comment[:introduction])
 
-            %dt あとがき
+            %dt 後記
             %dd.indent= html.ln_to_br(comment[:postscript])

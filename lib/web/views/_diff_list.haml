@@ -3,7 +3,7 @@
   .list{ "data-diff-target" => @list[:id] }
     - if @list[:list].empty?
       %i
-        （差分がまだ存在しません）
+        （尚無差異紀錄）
     - else
       - @list[:list].each do |data|
         - next if data[:objects].empty?

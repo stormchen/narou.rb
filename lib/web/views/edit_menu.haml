@@ -81,7 +81,7 @@
     $("#button_save").on("click", function(e) {
       menu.save(input_box.val().trim());
       refreshPreview();
-      Narou.Flash.show("保存が完了しました", "success");
+      Narou.Flash.show("已完成儲存", "success");
     });
 
     $("#button_clear").on("click", function(e) {
@@ -136,19 +136,19 @@
 = partial :header
 
 .container.theme-showcase(role="main")
-  %h1 個別メニューの編集
+  %h1 編輯個別選單
   %ul.text-muted
     %li
-      編集内容はブラウザに保存されます。他のPCのブラウザでも同じ内容にしたい場合は
-      下部にあるメモ帳を使ってコピペして下さい。
+      編輯內容將儲存於瀏覽器中。若希望於其他電腦的瀏覽器中同步相同內容，
+      請使用下方的記事本進行複製貼上。
     %li
-      書式は「ラベル&lt;&gt;コマンド」になっています。空行や不正な書式の場合は無視されます。
-      また、ラベル部分は自由に設定出来ます。
+      格式為「標籤名稱&lt;&gt;指令名稱」。空行或格式不符者將自動忽略。
+      此外，標籤名稱部分可依個人喜好自由命名。
   #edit_menu_container
     .row
       .col-sm-4
         %span.label.label-default
-          項目一覧
+          項目清單
         #menu_items
           %table.table.table-hover.table-bordered
             %tbody
@@ -156,7 +156,7 @@
                 :plain
                   <% _.each(menu.items, function(item) { %>
                     <tr data-menu-label="<%- item.label %>" data-menu-command="<%- item.command %>">
-                      <td>
+                       <td>
                         <%- item.label %>
                         <span class="label label-white pull-right"><%= item.command %></span>
                       </td>
@@ -168,37 +168,37 @@
             %span.glyphicon.glyphicon-arrow-right
       .col-sm-4
         %span.label.label-default
-          編集欄
+          編輯區
         %script(type="text/plain" role="template")
           %textarea#input_box.form-control
             <%- menu.text %>
       .col-sm-2
         %div
           %span.label.label-default
-            プレビュー
+            即時預覽
         #preview
     .row
       &nbsp;
     .row
       .col-sm-4.text-center
         %button#button_clear_active.btn.btn-default
-          選択を解除
+          取消選取
       .col-sm-1
       .col-sm-4.text-center
         %button#button_save.btn.btn-info
-          保存
+          儲存
         %button#button_clear.btn.btn-default
-          消去
+          清空
         %button#button_reset_to_default.btn.btn-default
-          デフォに戻す
+          恢復預設值
     .row
       &nbsp;
     .row
       .col-sm-4
         %div
           %span.label.label-default
-            メモ帳
+            記事本
           &nbsp;
           %span.text-muted
-            %small ※自動でサーバに保存されます
+            %small ※自動儲存至伺服器
         #notepad

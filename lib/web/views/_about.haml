@@ -155,10 +155,10 @@
 
 .link-to-changelog-in-about
   %a.btn.btn-default.btn-sm{ href: "https://jbbs.shitaraba.net/computer/44668/", target: "_blank" }
-    掲示板
+    討論板
     %span.glyphicon.glyphicon-new-window
   %a.btn.btn-default.btn-sm(href="https://github.com/whiteleaf7/narou/blob/master/ChangeLog.md" target="_blank")
-    更新履歴
+    更新記錄
     %span.glyphicon.glyphicon-new-window
 
 .text-center
@@ -172,31 +172,31 @@
     .checking
       %p.rotate-progress
         %span.icon
-        %span.text アップデートを確認しています...
+        %span.text 正在檢查版本更新...
     .version-is-latest
       %p
         %span.glyphicon.glyphicon-thumbs-up.text-primary
-        Narou.rb は最新版です。
+        Narou.rb 已是最新版本。
     .need-an-update
       %p
         %span#latest-version-found
           %span.glyphicon.glyphicon-exclamation-sign.text-primary
-          新しいバージョン(<span id="latest-version"></span>)が見つかりました。<br>
+          發現新版本 (<span id="latest-version"></span>)。<br>
         %a#version-update-button.btn.btn-primary.btn-sm
-          %b Narou.rb を更新する
+          %b 更新 Narou.rb
         %span#version-updating
           %span.rotate-progress
             %span.icon
-            %span.text 更新しています。
+            %span.text 正在更新中。
         %a#reboot-button.btn.btn-success.btn-sm
-          %b 再起動して更新を反映する
+          %b 重啟以套用更新
         %span#nothing-to-update.text-success
-          Narou.rb はすでに最新版です。
+          Narou.rb 已是最新版本。
       %p#fail-update-system.text-danger
-        Narou.rb の更新に失敗しました。
+        Narou.rb 更新失敗。
     .error
       %span.text-danger
-        最新バージョンの取得に失敗しました。
+        取得最新版本資訊失敗。
 
   %pre#gem-result-log.log-box
 

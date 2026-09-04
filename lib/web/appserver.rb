@@ -274,9 +274,9 @@ class Narou::AppServer < Sinatra::Base
     Narou.save_global_replace_pattern
 
     if @error_list.empty?
-      session[:alert] = [ "保存が完了しました", "success" ]
+      session[:alert] = [ "儲存完成", "success" ]
     else
-      session[:alert] = [ "#{@error_list.size}個の設定にエラーがありました", "danger" ]
+      session[:alert] = [ "有 #{@error_list.size} 個設定項目發生錯誤", "danger" ]
     end
     redirect to "/settings"
   end
@@ -286,7 +286,7 @@ class Narou::AppServer < Sinatra::Base
   end
 
   get "/help" do
-    @title = "ヘルプ"
+    @title = "說明"
     haml :help
   end
 
@@ -298,7 +298,7 @@ class Narou::AppServer < Sinatra::Base
 
   post "/shutdown" do
     self.class.quit!
-    "シャットダウンしました。再起動するまで操作は出来ません"
+    "伺服器已關閉。在重新啟動之前無法進行任何操作"
   end
 
   post "/reboot" do
@@ -340,7 +340,7 @@ class Narou::AppServer < Sinatra::Base
 
   before "/novels/:id/setting" do
     @novel_title = @data["title"]
-    @title = "小説の変換設定 - #{h @novel_title}"
+    @title = "小說轉換設定 - #{h @novel_title}"
     @setting_variables = []
     @error_list = {}
     @novel_setting = NovelSetting.new(@id, true, true)    # 空っぽの設定を作成
@@ -378,10 +378,8 @@ class Narou::AppServer < Sinatra::Base
     end
     @novel_setting.save_settings
 
-    # 置換設定保存
-    params_replace_pattern = params["replace_pattern"]
     @novel_setting.replace_pattern.clear
-    if params_replace_pattern.kind_of?(Array)
+    unless params_replace_pattern.empty?
       params_replace_pattern.each do |pattern|
         left, right = pattern["left"].strip, pattern["right"].strip
         next if left == ""
@@ -391,9 +389,9 @@ class Narou::AppServer < Sinatra::Base
     @novel_setting.save_replace_pattern
 
     if @error_list.empty?
-      session[:alert] = [ "保存が完了しました", "success" ]
+      session[:alert] = [ "儲存完成", "success" ]
     else
-      session[:alert] = [ "#{@error_list.size}個の設定にエラーがありました", "danger" ]
+      session[:alert] = [ "有 #{@error_list.size} 個設定項目發生錯誤", "danger" ]
     end
 
     haml :"novels/setting"
@@ -451,12 +449,12 @@ class Narou::AppServer < Sinatra::Base
   end
 
   get "/notepad" do
-    @title = "メモ帳"
+    @title = "便簽記事本"
     haml :notepad
   end
 
   get "/edit_menu" do
-    @title = "個別メニューの編集"
+    @title = "編輯自訂個別選單"
     haml :edit_menu
   end
 
@@ -489,18 +487,18 @@ class Narou::AppServer < Sinatra::Base
           author: escape_html(data["author"]),
           sitename: data["sitename"],
           toc_url: data["toc_url"],
-          novel_type: data["novel_type"] == 2 ? "短編" : "連載",
+          novel_type: data["novel_type"] == 2 ? "短篇" : "連載",
           tags: if tags.empty?
                   ""
                 else
                   %!#{decorate_tags(tags)}&nbsp;<span class="tag tag-reset label label-white"! +
-                  %!data-tag="" data-toggle="tooltip" title="タグ検索を解除">&nbsp;</span>!
+                  %!data-tag="" data-toggle="tooltip" title="清除標籤搜尋">&nbsp;</span>!
                 end,
           status: [
             is_frozen ? "凍結" : nil,
             tags.include?("end") ? "完結" : nil,
-            tags.include?("404") ? "削除" : nil,
-            data["suspend"] ? "中断" : nil
+            tags.include?("404") ? "已刪除" : nil,
+            data["suspend"] ? "中斷" : nil
           ].compact.join(", "),
           download: %!<a href="/novels/#{id}/download" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-download-alt"></span></a>!,
           frozen: is_frozen,
@@ -723,8 +721,8 @@ class Narou::AppServer < Sinatra::Base
 
   get "/api/tag_list" do
     result =
-      +'<div><span class="tag tag-reset label label-default" data-tag="">タグ検索を解除</span></div>' \
-      '<div class="text-muted" style="font-size:10px">Altキーを押しながらで除外検索</div>'
+      +'<div><span class="tag tag-reset label label-default" data-tag="">清除標籤搜尋</span></div>' \
+      '<div class="text-muted" style="font-size:10px">按住 Alt 鍵點擊可排除標籤</div>'
     tagname_list = Command::Tag.get_tag_list.keys
     tagname_list.sort.each do |tagname|
       result << "<div>#{decorate_tags([tagname])} " \
