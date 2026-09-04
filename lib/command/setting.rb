@@ -623,6 +623,43 @@ module Command
           type: :boolean, help: "18歳以上かどうか", invisible: true,
           tab: :global
         },
+        "translate.enable" => {
+          type: :boolean,
+          help: "翻訳機能を有効にする",
+          tab: :global
+        },
+        "translate.engine" => {
+          type: :select,
+          help: "翻訳エンジンを選択 (openai, gemini, web)",
+          select_keys: %w(openai gemini web),
+          select_summaries: %w(OpenAI Gemini Web),
+          tab: :global
+        },
+        "translate.endpoint" => {
+          type: :string,
+          help: "翻訳APIのエンドポイントURL",
+          tab: :global
+        },
+        "translate.api_key" => {
+          type: :string,
+          help: "翻訳APIのAPIキー",
+          tab: :global
+        },
+        "translate.model" => {
+          type: :string,
+          help: "翻訳に使用するモデル名",
+          tab: :global
+        },
+        "translate.chunk_size" => {
+          type: :integer,
+          help: "翻訳時の1チャンクあたりの文字数",
+          tab: :global
+        },
+        "translate.max_retries" => {
+          type: :integer,
+          help: "翻訳リクエスト失敗時の最大リトライ回数",
+          tab: :global
+        },
       }
     }
 

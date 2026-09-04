@@ -170,16 +170,14 @@ class NovelSetting
   #
   def set_attribute
     @settings.each_key do |key|
-      instance_eval <<-EOS
-        def #{key}
-          @settings["#{key}"]
-        end
+      define_singleton_method(key) do
+        @settings[key]
+      end
 
-        def #{key}=(value)
-          check_value_of_type("#{key}", value)
-          @settings["#{key}"] = value
-        end
-      EOS
+      define_singleton_method("#{key}=") do |value|
+        check_value_of_type(key, value)
+        @settings[key] = value
+      end
     end
   end
 
@@ -505,6 +503,50 @@ class NovelSetting
       type: :string,
       value: "",
       help: "出力ファイル名を任意の文字列に変更する。convert.filename-to-ncode の設定よりも優先される。※拡張子を含めないで下さい"
+    },
+    {
+      name: "translate.enable",
+      type: :boolean,
+      value: false,
+      help: "日文翻譯為繁體中文功能開關"
+    },
+    {
+      name: "translate.engine",
+      type: :select,
+      value: "openai",
+      help: "翻譯引擎類型(openai, gemini, web)",
+      select_keys: %w(openai gemini web),
+      select_summaries: %w(OpenAI/Sakura Gemini Web)
+    },
+    {
+      name: "translate.endpoint",
+      type: :string,
+      value: "http://localhost:11434/v1",
+      help: "翻譯服務 API 端點 URL"
+    },
+    {
+      name: "translate.api_key",
+      type: :string,
+      value: "",
+      help: "翻譯服務 API Key (本地服務可留空)"
+    },
+    {
+      name: "translate.model",
+      type: :string,
+      value: "sakura-13b",
+      help: "使用的翻譯模型名稱 (如 sakura-13b, deepseek-chat, gemini-1.5-flash)"
+    },
+    {
+      name: "translate.chunk_size",
+      type: :integer,
+      value: 2500,
+      help: "單次翻譯文本分塊最大字元數"
+    },
+    {
+      name: "translate.max_retries",
+      type: :integer,
+      value: 3,
+      help: "翻譯失敗時最大重試次數"
     },
   ]
 
