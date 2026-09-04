@@ -18,6 +18,12 @@ module Command
     end
 
     attr_accessor :device, :converted_txt_path
+    attr_reader :options, :opt
+
+    def parse_options!(argv)
+      @options.clear
+      @opt.parse!(argv)
+    end
 
     @@sending_error_list = []
 
@@ -101,6 +107,13 @@ module Command
       }
       @opt.on("--ignore-force", "settingコマンドのforce系設定を無視する") {
         @options["ignore-force"] = true
+      }
+      @opt.on("--[no-]translate", "電子書轉換時將日文翻譯為繁體中文") { |v|
+        @options["translate"] = v
+      }
+      @opt.on("--retranslate", "忽略翻譯快取，重新翻譯所有章節") {
+        @options["retranslate"] = true
+        @options["translate"] = true
       }
       @opt.separator <<-EOS
 
@@ -238,6 +251,8 @@ module Command
                 display_inspector: @options["inspect"],
                 ignore_force: @options["ignore-force"],
                 ignore_default: @options["ignore-default"],
+                translate: @options["translate"],
+                retranslate: @options["retranslate"],
               })
         @novel_data = Downloader.get_data_by_target(target)
         @options["yokogaki"] = NovelSetting.load(target)["enable_yokogaki"]
@@ -274,6 +289,8 @@ module Command
                display_inspector: @options["inspect"],
                ignore_force: @options["ignore-force"],
                ignore_default: @options["ignore-default"],
+               translate: @options["translate"],
+               retranslate: @options["retranslate"],
              })
     rescue ArgumentError => e
       if e.message =~ /invalid byte sequence in UTF-8/

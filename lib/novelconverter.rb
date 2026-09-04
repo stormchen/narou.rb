@@ -17,6 +17,7 @@ require_relative "helper"
 require_relative "inventory"
 require_relative "html"
 require_relative "eventable"
+require_relative "narou/translator"
 
 class NovelConverter
   include Narou::Eventable
@@ -25,6 +26,7 @@ class NovelConverter
   NOVEL_TEXT_TEMPLATE_NAME_FOR_IBUNKO = "ibunko_novel.txt"
 
   attr_reader :use_dakuten_font, :stream_io
+  attr_accessor :options, :translator
 
   def self.extensions_of_converted_files(device)
     exts = [".txt"]
@@ -48,6 +50,11 @@ class NovelConverter
     setting = NovelSetting.load(target, options[:ignore_force], options[:ignore_default])
     if setting
       novel_converter = new(setting, options[:output_filename], options[:display_inspector])
+      novel_converter.options = options
+      translate_opt = options[:translate].nil? ? options["translate"] : options[:translate]
+      if !translate_opt.nil?
+        novel_converter.translator.options["translate.enable"] = translate_opt
+      end
       return {
         converted_txt_paths: novel_converter.convert_main,
         use_dakuten_font: novel_converter.use_dakuten_font
@@ -75,6 +82,11 @@ class NovelConverter
     setting.author = ""
     setting.title = File.basename(filename)
     novel_converter = new(setting, output_filename, options[:display_inspector])
+    novel_converter.options = options
+    translate_opt = options[:translate].nil? ? options["translate"] : options[:translate]
+    if !translate_opt.nil?
+      novel_converter.translator.options["translate.enable"] = translate_opt
+    end
     text = open(filename, "r:BOM|UTF-8") { |fp| fp.read }.gsub("\r", "")
     if options[:encoding]
       text.force_encoding(options[:encoding]).encode!(Encoding::UTF_8)
@@ -411,6 +423,8 @@ class NovelConverter
     @converter.output_text_dir = output_text_dir
     @data = @novel_id ? Database.instance.get_data("id", @novel_id) : {}
     @stream_io = stream_io
+    @options = {}
+    @translator = Narou::Translator.create(@setting, @setting&.archive_path)
   end
 
   #
@@ -638,6 +652,9 @@ class NovelConverter
   # テキストファイル変換時の実質的なメイン処理
   #
   def convert_main_for_text(text)
+    if @translator&.enabled?
+      text = @translator.translate_text(text, type: "textfile")
+    end
     result = @converter.convert(text, "textfile")
     unless @setting.enable_enchant_midashi
       @inspector.info "テキストファイルの処理を実行しましたが、改行直後の見出し付与は有効になっていません。" +
@@ -669,6 +686,11 @@ class NovelConverter
       array_of_subtitles = subtitles.each_slice(@setting.slice_size).to_a
     else
       array_of_subtitles = [subtitles]
+    end
+    if @translator&.enabled?
+      force_retranslate = @options&.[](:retranslate) || @options&.[]("retranslate") || false
+      toc = @translator.translate_toc(toc, force_retranslate: force_retranslate)
+      @novel_title = toc["title"] if toc["title"] && !toc["title"].empty?
     end
     toc["story"] = @converter.convert(toc["story"], "story")
     site_setting = SiteSetting.find(toc["toc_url"])
@@ -725,7 +747,11 @@ class NovelConverter
       trigger(:"convert_main.loop", i)
       @converter.current_index = i
       section = load_novel_section(subinfo, section_save_dir)
-      if section["chapter"].length > 0
+      if @translator&.enabled?
+        force_retranslate = @options&.[](:retranslate) || @options&.[]("retranslate") || false
+        section = @translator.translate_section(subinfo, section, force_retranslate: force_retranslate)
+      end
+      if section["chapter"] && section["chapter"].length > 0
         section["chapter"] = @converter.convert(section["chapter"], "chapter")
       end
 
