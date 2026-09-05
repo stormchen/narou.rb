@@ -37,7 +37,8 @@ module Narou
 
         data = load_yaml_file(path)
         return nil unless data.is_a?(Hash)
-        return nil if data["source_hash"] != source_hash
+        valid_hashes = source_hash.is_a?(Array) ? source_hash : [source_hash]
+        return nil unless valid_hashes.include?(data["source_hash"])
 
         data
       rescue StandardError

@@ -72,4 +72,18 @@ class TestCacheManager < Minitest::Test
 
     assert_nil @cache_manager.get_section_cache(index, subtitle, "any_hash")
   end
+
+  def test_get_section_cache_with_array_of_hashes
+    index = 4
+    subtitle = "多雜湊比對"
+    source_hash = "correct_hash_1"
+    data = { "subtitle" => "多雜湊", "body" => "內容" }
+
+    @cache_manager.save_section_cache(index, subtitle, source_hash, data, engine: "openai", model: "sakura-13b")
+
+    # 單一符合
+    assert @cache_manager.get_section_cache(index, subtitle, ["other_hash", "correct_hash_1"])
+    # 都不符合
+    assert_nil @cache_manager.get_section_cache(index, subtitle, ["other_hash_1", "other_hash_2"])
+  end
 end

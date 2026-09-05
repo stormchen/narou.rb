@@ -76,7 +76,22 @@ module Narou
         source_hash = CacheManager.calculate_hash(source_content)
 
         unless force_retranslate
-          cached = @cache_manager.get_section_cache(index, subtitle, source_hash)
+          candidate_hashes = [source_hash]
+          data_type = section.dig("element", "data_type") || "text"
+          if data_type != "text"
+            aozora_section = Marshal.load(Marshal.dump(section))
+            aozora_element = aozora_section["element"] || {}
+            aozora_element.delete("data_type")
+            require_relative "../html" unless defined?(HTML)
+            html = HTML.new
+            aozora_element.each do |text_type, elm_text|
+              html.string = elm_text
+              aozora_element[text_type] = html.to_aozora(pre_html: data_type == "pre_html")
+            end
+            candidate_hashes << CacheManager.calculate_hash(aozora_section.inspect)
+          end
+
+          cached = @cache_manager.get_section_cache(index, subtitle, candidate_hashes)
           return cached["data"] if cached
         end
 
