@@ -25,9 +25,21 @@ class TestTranslatorSettings < Minitest::Test
 
   def setup
     @tmpdir = Dir.mktmpdir("narou_setting_test")
+    FileUtils.mkdir_p(File.join(@tmpdir, ".narou"))
+    @original_root_dir_method = Narou.method(:root_dir)
+    @original_global_setting_dir_method = Narou.method(:global_setting_dir)
+    tmpdir = @tmpdir
+    Narou.define_singleton_method(:root_dir) { Pathname(tmpdir) }
+    Narou.define_singleton_method(:global_setting_dir) { Pathname(tmpdir).join(".narousetting") }
+    Inventory.clear
   end
 
   def teardown
+    orig = @original_root_dir_method
+    orig_global = @original_global_setting_dir_method
+    Narou.define_singleton_method(:root_dir) { orig.call }
+    Narou.define_singleton_method(:global_setting_dir) { orig_global.call }
+    Inventory.clear
     FileUtils.remove_entry(@tmpdir)
   end
 

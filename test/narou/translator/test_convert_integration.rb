@@ -43,8 +43,11 @@ class TestConvertIntegration < Minitest::Test
     SiteSetting.instance_variable_set(:@narou, nil)
 
     @original_root_dir_method = Narou.method(:root_dir)
+    @original_global_setting_dir_method = Narou.method(:global_setting_dir)
     tmpdir = @tmpdir
     Narou.define_singleton_method(:root_dir) { Pathname(tmpdir) }
+    Narou.define_singleton_method(:global_setting_dir) { Pathname(tmpdir).join(".narousetting") }
+    Inventory.clear
 
     # 建立 setting.ini
     @setting = NovelSetting.new(@archive_path, true, true)
@@ -91,7 +94,10 @@ class TestConvertIntegration < Minitest::Test
 
   def teardown
     orig = @original_root_dir_method
+    orig_global = @original_global_setting_dir_method
     Narou.define_singleton_method(:root_dir) { orig.call }
+    Narou.define_singleton_method(:global_setting_dir) { orig_global.call }
+    Inventory.clear
     SiteSetting.instance_variable_set(:@settings, nil)
     SiteSetting.instance_variable_set(:@narou, nil)
     FileUtils.remove_entry(@tmpdir)

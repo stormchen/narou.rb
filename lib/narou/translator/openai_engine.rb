@@ -47,11 +47,14 @@ module Narou
       def translate_single_chunk(text)
         uri = URI.parse("#{@endpoint}/chat/completions")
         is_sakura = @model.to_s.downcase.include?("sakura")
+        max_tokens = [[(text.length * 3).ceil + 256, 512].max, 4096].min
         payload = {
           model: @model,
           messages: build_messages(text),
-          temperature: is_sakura ? 0.1 : 0.3
+          temperature: is_sakura ? 0.1 : 0.3,
+          max_tokens: max_tokens
         }
+        payload[:frequency_penalty] = 0.2 if is_sakura
 
         retries = 0
         begin
@@ -63,7 +66,7 @@ module Narou
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = (uri.scheme == "https")
           http.open_timeout = 30
-          http.read_timeout = 600
+          http.read_timeout = 180
 
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           res = http.request(req)
@@ -76,7 +79,9 @@ module Narou
           content = data.dig("choices", 0, "message", "content")
           raise "Invalid response structure: choices[0].message.content missing" if content.nil?
 
-          content.strip
+          cleaned = content.strip
+          # 如果仍然出現異常重複字符（例如連續超過10個相同字符），進行截斷清理
+          cleaned.gsub(/(.)\1{9,}/, '\1')
         rescue StandardError => e
           retries += 1
           if retries <= @max_retries
