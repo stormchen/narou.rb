@@ -92,6 +92,18 @@ module Narou
         end
 
         element = translated_section["element"] || {}
+        data_type = element["data_type"] || "text"
+        if data_type != "text"
+          require_relative "../html" unless defined?(HTML)
+          html = HTML.new
+          %w[introduction body postscript].each do |elm_type|
+            if element[elm_type] && !element[elm_type].empty?
+              html.string = element[elm_type]
+              element[elm_type] = html.to_aozora(pre_html: data_type == "pre_html")
+            end
+          end
+        end
+
         %w[introduction body postscript].each do |elm_type|
           if element[elm_type] && !element[elm_type].empty?
             element[elm_type] = translate_text(element[elm_type], type: elm_type)

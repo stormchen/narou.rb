@@ -748,16 +748,6 @@ class NovelConverter
       @converter.current_index = i
       section = load_novel_section(subinfo, section_save_dir)
 
-      element = section["element"]
-      data_type = element.delete("data_type") || "text"
-      @converter.data_type = data_type
-      element.each do |text_type, elm_text|
-        if data_type != "text"
-          html.string = elm_text
-          element[text_type] = html.to_aozora(pre_html: data_type == "pre_html")
-        end
-      end
-
       if @translator&.enabled?
         force_retranslate = @options&.[](:retranslate) || @options&.[]("retranslate") || false
         section = @translator.translate_section(subinfo, section, force_retranslate: force_retranslate)
@@ -769,7 +759,13 @@ class NovelConverter
       @inspector.subtitle = section["subtitle"]
       section["subtitle"] = @converter.convert(section["subtitle"], "subtitle")
       element = section["element"]
+      data_type = element.delete("data_type") || "text"
+      @converter.data_type = data_type
       element.each do |text_type, elm_text|
+        if data_type != "text"
+          html.string = elm_text
+          elm_text = html.to_aozora(pre_html: data_type == "pre_html")
+        end
         element[text_type] = @converter.convert(elm_text, text_type)
       end
       sections << section
