@@ -23,7 +23,7 @@ class TestOpenAIEngine < Minitest::Test
 
   def test_base_defaults_and_options
     base = Narou::Translator::Base.new
-    assert_equal 1500, base.chunk_size
+    assert_equal 600, base.chunk_size
     assert_equal 3, base.max_retries
 
     custom = Narou::Translator::Base.new(chunk_size: 1000, max_retries: 5)
@@ -48,7 +48,8 @@ class TestOpenAIEngine < Minitest::Test
   def test_split_chunks_single_line_exceeding_max_length
     text = "一" * 50
     chunks = @engine.split_chunks(text, 20)
-    assert_equal [text], chunks
+    assert chunks.size >= 2
+    assert_equal text, chunks.join
   end
 
   def test_split_chunks_empty_or_nil

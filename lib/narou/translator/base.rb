@@ -3,7 +3,7 @@
 module Narou
   module Translator
     class Base
-      DEFAULT_CHUNK_SIZE = 1500
+      DEFAULT_CHUNK_SIZE = 600
       DEFAULT_MAX_RETRIES = 3
 
       attr_reader :options, :chunk_size, :max_retries
@@ -25,12 +25,24 @@ module Narou
         chunks = []
         current = +""
 
-        text.each_line do |line|
-          if (current.length + line.length) > max_length && !current.empty?
-            chunks << current
-            current = +""
+        lines = text.scan(/.*?\n|.+$/)
+        lines.each do |line|
+          if line.length > max_length
+            sub_lines = line.scan(/.{1,#{max_length}}(?:[。！？\n]|$)|.{1,#{max_length}}/)
+            sub_lines.each do |sub_line|
+              if (current.length + sub_line.length) > max_length && !current.empty?
+                chunks << current
+                current = +""
+              end
+              current << sub_line
+            end
+          else
+            if (current.length + line.length) > max_length && !current.empty?
+              chunks << current
+              current = +""
+            end
+            current << line
           end
-          current << line
         end
         chunks << current unless current.empty?
         chunks
