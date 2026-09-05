@@ -87,8 +87,10 @@ module Narou
           raise "Invalid response structure: choices[0].message.content missing" if content.nil?
 
           cleaned = content.strip
-          # 如果仍然出現異常重複字符（例如連續超過10個相同字符），進行截斷清理
-          cleaned.gsub(/(.)\1{9,}/, '\1')
+          # 過濾連續單一字符異常重複（例如連續超過10個相同字符）
+          cleaned = cleaned.gsub(/(.)\1{9,}/, '\1')
+          # 過濾長度在 6~300 字元之間的子字串連續循環重複（重複3次以上時截斷為保留1次）
+          cleaned.gsub(/(.{6,300}?)\1{2,}/m, '\1')
         rescue StandardError => e
           retries += 1
           if retries <= @max_retries
