@@ -30,15 +30,27 @@ module Narou
 
       private
 
-      def translate_single_chunk(text)
-        uri = URI.parse("#{@endpoint}/chat/completions")
-        payload = {
-          model: @model,
-          messages: [
+      def build_messages(text)
+        if @model.to_s.downcase.include?("sakura")
+          [
+            { role: "system", content: "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成繁体中文，并联系上下文正确使用词汇。保留所有__TAG_开头的特殊标记。" },
+            { role: "user", content: "将下面的日文文本翻译成繁体中文：\n#{text}" }
+          ]
+        else
+          [
             { role: "system", content: system_prompt },
             { role: "user", content: text }
-          ],
-          temperature: 0.3
+          ]
+        end
+      end
+
+      def translate_single_chunk(text)
+        uri = URI.parse("#{@endpoint}/chat/completions")
+        is_sakura = @model.to_s.downcase.include?("sakura")
+        payload = {
+          model: @model,
+          messages: build_messages(text),
+          temperature: is_sakura ? 0.1 : 0.3
         }
 
         retries = 0
@@ -53,7 +65,9 @@ module Narou
           http.open_timeout = 30
           http.read_timeout = 600
 
+          t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           res = http.request(req)
+          t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           unless res.is_a?(Net::HTTPSuccess)
             raise "HTTP #{res.code}: #{res.body}"
           end

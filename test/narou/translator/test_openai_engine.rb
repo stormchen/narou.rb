@@ -115,12 +115,12 @@ class TestOpenAIEngine < Minitest::Test
     # 驗證 HTTP Payload
     payload = JSON.parse(captured_request.body)
     assert_equal "sakura-13b", payload["model"]
-    assert_equal 0.3, payload["temperature"]
+    assert_equal 0.1, payload["temperature"]
     assert_equal 2, payload["messages"].size
     assert_equal "system", payload["messages"][0]["role"]
-    assert_includes payload["messages"][0]["content"], "繁體中文"
+    assert_includes payload["messages"][0]["content"], "繁体中文"
     assert_equal "user", payload["messages"][1]["role"]
-    assert_equal "これはテストです。", payload["messages"][1]["content"]
+    assert_includes payload["messages"][1]["content"], "これはテストです。"
   end
 
   def test_translate_multiple_chunks
