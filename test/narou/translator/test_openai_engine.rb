@@ -84,6 +84,13 @@ class TestOpenAIEngine < Minitest::Test
     assert_equal 600, default_openai.chunk_size
     non_sakura_openai = Narou::Translator::OpenAIEngine.new(model: "gpt-4o")
     assert_equal 2500, non_sakura_openai.chunk_size
+
+    # 當傳入系統預設 2500 chunk_size 時，Sakura 模型依然自動安全降為 600
+    sakura_with_default_chunk = Narou::Translator::OpenAIEngine.new(model: "sakura-13b", chunk_size: 2500)
+    assert_equal 600, sakura_with_default_chunk.chunk_size
+    # 當手動指定非 2500 的數值時，尊重使用者指定
+    sakura_with_custom_chunk = Narou::Translator::OpenAIEngine.new(model: "sakura-13b", chunk_size: 800)
+    assert_equal 800, sakura_with_custom_chunk.chunk_size
   end
 
   def test_translate_empty_or_nil

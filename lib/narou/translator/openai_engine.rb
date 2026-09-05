@@ -17,7 +17,12 @@ module Narou
         @model = options[:model] || "sakura-13b"
         @retry_delay = options.key?(:retry_delay) ? options[:retry_delay].to_f : 2.0
         is_sakura = @model.to_s.downcase.include?("sakura")
-        @chunk_size = (options[:chunk_size] || (is_sakura ? 600 : DEFAULT_CHUNK_SIZE)).to_i
+        if is_sakura
+          user_chunk_size = options[:chunk_size].to_i
+          @chunk_size = (user_chunk_size > 0 && user_chunk_size != DEFAULT_CHUNK_SIZE) ? user_chunk_size : 600
+        else
+          @chunk_size = (options[:chunk_size] || DEFAULT_CHUNK_SIZE).to_i
+        end
       end
 
       def translate(text, context: {})
@@ -68,7 +73,7 @@ module Narou
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = (uri.scheme == "https")
           http.open_timeout = 30
-          http.read_timeout = 180
+          http.read_timeout = 300
 
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           res = http.request(req)
