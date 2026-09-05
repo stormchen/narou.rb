@@ -200,4 +200,24 @@ class TestTranslatorFacade < Minitest::Test
     assert_equal "魔王", result["title"]
     assert_equal "勇者", result["story"]
   end
+
+  def test_with_lock_when_enabled
+    executed = false
+    @translator.with_lock do
+      assert @translator.process_lock.locked?
+      executed = true
+    end
+    assert executed
+    refute @translator.process_lock.locked?
+  end
+
+  def test_with_lock_when_disabled
+    disabled_translator = Narou::Translator.new({ "translate.enable" => false }, @tmpdir)
+    executed = false
+    disabled_translator.with_lock do
+      refute disabled_translator.process_lock.locked?
+      executed = true
+    end
+    assert executed
+  end
 end

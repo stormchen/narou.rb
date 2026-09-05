@@ -434,24 +434,42 @@ class NovelConverter
     display_header
     initialize_event
 
-    if text
-      array_of_converted_text = convert_main_for_text(text)
+    action = lambda do
+      if text
+        array_of_converted_text = convert_main_for_text(text)
+      else
+        array_of_converted_text = convert_main_for_novel
+        update_latest_convert_novel
+      end
+      inspect_novel(array_of_converted_text)
+
+      array_of_output_path = []
+      array_of_converted_text.each_with_index do |converted_text, i|
+        output_path = create_output_path(text, converted_text, i + 1)
+        File.write(output_path, converted_text)
+        array_of_output_path.push(output_path)
+      end
+
+      display_footer
+
+      array_of_output_path
+    end
+
+    if @translator&.enabled?
+      begin
+        @translator.with_lock(&action)
+      rescue Narou::Translator::LockError => e
+        stream_io.puts
+        if stream_io.respond_to?(:error)
+          stream_io.error(e.message)
+        else
+          stream_io.puts(e.message)
+        end
+        exit Narou::EXIT_ERROR_CODE
+      end
     else
-      array_of_converted_text = convert_main_for_novel
-      update_latest_convert_novel
+      action.call
     end
-    inspect_novel(array_of_converted_text)
-
-    array_of_output_path = []
-    array_of_converted_text.each_with_index do |converted_text, i|
-      output_path = create_output_path(text, converted_text, i + 1)
-      File.write(output_path, converted_text)
-      array_of_output_path.push(output_path)
-    end
-
-    display_footer
-
-    array_of_output_path
   end
 
   def initialize_event

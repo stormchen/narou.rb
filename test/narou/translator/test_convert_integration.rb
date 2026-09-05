@@ -293,4 +293,20 @@ class TestConvertIntegration < Minitest::Test
       Narou::Translator.define_singleton_method(:create) { |*args| orig_create.call(*args) }
     end
   end
+
+  def test_convert_main_aborts_when_locked_by_another_process
+    converter = NovelConverter.new(@setting, nil, false, nil, stream_io: StringIO.new)
+    converter.options = { translate: true }
+    converter.translator.options["translate.enable"] = true
+    converter.translator.instance_variable_set(:@engine, @mock_engine)
+
+    lock_path = File.join(@archive_path, Narou::Translator::ProcessLock::LOCK_FILE_NAME)
+    alive_pid = Process.ppid > 0 ? Process.ppid : 4
+    File.write(lock_path, YAML.dump({ "pid" => alive_pid, "created_at" => Time.now.to_s, "novel_dir" => @archive_path }))
+
+    err = assert_raises(SystemExit) do
+      converter.convert_main
+    end
+    assert_equal Narou::EXIT_ERROR_CODE, err.status
+  end
 end

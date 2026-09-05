@@ -6,6 +6,7 @@ require_relative "translator/base"
 require_relative "translator/openai_engine"
 require_relative "translator/gemini_engine"
 require_relative "translator/web_engine"
+require_relative "translator/process_lock"
 
 module Narou
   module Translator
@@ -24,13 +25,19 @@ module Narou
     class Manager
       include Translator
 
-      attr_reader :options, :archive_path, :engine, :cache_manager
+      attr_reader :options, :archive_path, :engine, :cache_manager, :process_lock
 
       def initialize(options, archive_path)
         @options = options || {}
         @archive_path = archive_path
         @cache_manager = CacheManager.new(@archive_path)
+        @process_lock = ProcessLock.new(@archive_path)
         @engine = build_engine
+      end
+
+      def with_lock(&block)
+        return yield unless enabled?
+        @process_lock.synchronize(&block)
       end
 
       def enabled?

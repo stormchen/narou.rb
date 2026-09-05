@@ -23,7 +23,7 @@ class TestOpenAIEngine < Minitest::Test
 
   def test_base_defaults_and_options
     base = Narou::Translator::Base.new
-    assert_equal 600, base.chunk_size
+    assert_equal 2500, base.chunk_size
     assert_equal 3, base.max_retries
 
     custom = Narou::Translator::Base.new(chunk_size: 1000, max_retries: 5)
@@ -78,6 +78,12 @@ class TestOpenAIEngine < Minitest::Test
     # 測試 endpoint 結尾斜線過濾
     engine_with_slash = Narou::Translator::OpenAIEngine.new(endpoint: "https://api.openai.com/v1///")
     assert_equal "https://api.openai.com/v1", engine_with_slash.endpoint
+
+    # 測試預設 Sakura 模型具備 600 分塊保護，而非 Sakura 模型預設為 2500
+    default_openai = Narou::Translator::OpenAIEngine.new
+    assert_equal 600, default_openai.chunk_size
+    non_sakura_openai = Narou::Translator::OpenAIEngine.new(model: "gpt-4o")
+    assert_equal 2500, non_sakura_openai.chunk_size
   end
 
   def test_translate_empty_or_nil

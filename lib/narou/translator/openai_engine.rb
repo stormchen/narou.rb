@@ -16,6 +16,8 @@ module Narou
         @api_key = options[:api_key] || ""
         @model = options[:model] || "sakura-13b"
         @retry_delay = options.key?(:retry_delay) ? options[:retry_delay].to_f : 2.0
+        is_sakura = @model.to_s.downcase.include?("sakura")
+        @chunk_size = (options[:chunk_size] || (is_sakura ? 600 : DEFAULT_CHUNK_SIZE)).to_i
       end
 
       def translate(text, context: {})
