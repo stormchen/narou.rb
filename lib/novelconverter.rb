@@ -769,6 +769,7 @@ class NovelConverter
       if @translator&.enabled?
         force_retranslate = @options&.[](:retranslate) || @options&.[]("retranslate") || false
         section = @translator.translate_section(subinfo, section, force_retranslate: force_retranslate)
+        section["element"]&.delete("data_type")
       end
       if section["chapter"] && section["chapter"].length > 0
         section["chapter"] = @converter.convert(section["chapter"], "chapter")

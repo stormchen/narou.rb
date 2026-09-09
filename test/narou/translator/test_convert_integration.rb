@@ -309,4 +309,43 @@ class TestConvertIntegration < Minitest::Test
     end
     assert_equal Narou::EXIT_ERROR_CODE, err.status
   end
+
+  def test_convert_main_preserves_newlines_when_section_has_html_data_type
+    # 測試具有 data_type: html 的章節在翻譯後段落換行不會被清除
+    section_dir = File.join(@archive_path, "本文")
+    html_section_data = {
+      "subtitle" => "プロローグ",
+      "chapter" => "第一章",
+      "element" => {
+        "data_type" => "html",
+        "introduction" => "",
+        "body" => "<p id=\"L1\">第一行段落。</p>\n<p id=\"L2\">第二行段落。</p>\n<p id=\"L3\">第三行段落。</p>",
+        "postscript" => ""
+      }
+    }
+    File.write(File.join(section_dir, "1 プロローグ.yaml"), YAML.dump(html_section_data))
+
+    converter = NovelConverter.new(@setting, nil, false, nil, stream_io: StringIO.new)
+    converter.options = { translate: true }
+    converter.translator.options["translate.enable"] = true
+    converter.translator.instance_variable_set(:@engine, @mock_engine)
+
+    result_texts = converter.convert_main_for_novel
+    full_text = result_texts.first
+
+    # 確保多行文字沒有被合併為單一行，段落換行完整保留
+    assert_includes full_text, "第一行段落。\n　第二行段落。\n　第三行段落。"
+    refute_includes full_text, "第一行段落。第二行段落。第三行段落。"
+
+    # 驗證第二次轉換（快取讀取情境），換行亦能完整保留
+    converter2 = NovelConverter.new(@setting, nil, false, nil, stream_io: StringIO.new)
+    converter2.options = { translate: true }
+    converter2.translator.options["translate.enable"] = true
+    converter2.translator.instance_variable_set(:@engine, @mock_engine)
+
+    result_texts2 = converter2.convert_main_for_novel
+    full_text2 = result_texts2.first
+    assert_includes full_text2, "第一行段落。\n　第二行段落。\n　第三行段落。"
+    refute_includes full_text2, "第一行段落。第二行段落。第三行段落。"
+  end
 end

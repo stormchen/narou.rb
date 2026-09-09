@@ -99,7 +99,11 @@ module Narou
           end
 
           cached = @cache_manager.get_section_cache(index, subtitle, candidate_hashes)
-          return cached["data"] if cached
+          if cached
+            cached_data = cached["data"]
+            cached_data["element"]&.delete("data_type")
+            return cached_data
+          end
         end
 
         # 建立深層副本
@@ -114,7 +118,7 @@ module Narou
         end
 
         element = translated_section["element"] || {}
-        data_type = element["data_type"] || "text"
+        data_type = element.delete("data_type") || "text"
         if data_type != "text"
           require_relative "../html" unless defined?(HTML)
           html = HTML.new
