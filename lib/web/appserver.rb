@@ -1063,6 +1063,10 @@ class Narou::AppServer < Sinatra::Base
     api_key = (payload["api_key"] || "").to_s.strip
     model = (payload["model"] || "").to_s.strip
 
+    if !endpoint.empty? && !endpoint.start_with?("http://", "https://")
+      endpoint = "http://#{endpoint}"
+    end
+
     # 若是本機 Ollama，優先進行快速健康檢查 (HTTP GET /api/tags)
     if engine_type == "openai" && (endpoint.include?("11434") || endpoint.include?("localhost") || endpoint.include?("127.0.0.1"))
       begin
