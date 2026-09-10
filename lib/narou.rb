@@ -49,19 +49,15 @@ module Narou
 
     def root_dir
       root = nil
-      path = Dir.pwd
-      drive_letter = ""
-      if Helper.os_windows?
-        path.encode!(Encoding::UTF_8)
-        path.gsub!(/^[a-z]:/i, "")
-        drive_letter = $&
-      end
-      while path != ""
-        if File.directory?("#{drive_letter}#{path}/#{LOCAL_SETTING_DIR_NAME}")
-          root = drive_letter + path
+      cur = File.expand_path(Dir.pwd)
+      loop do
+        if File.directory?(File.join(cur, LOCAL_SETTING_DIR_NAME))
+          root = cur
           break
         end
-        path.gsub!(%r!/[^/]*$!, "")
+        parent = File.dirname(cur)
+        break if parent == cur
+        cur = parent
       end
       Pathname(root) if root
     end

@@ -1,44 +1,98 @@
-Narou.rb - 小説家になろうのダウンローダ＆縦書き整形＆管理アプリ。Kindle（などの電子書籍端末）でなろうを読む場合に超便利です！
-===================================================================================
+# Narou 小說管理器 (Narou.rb 繁體中文現代化增強版)
 
-[![Gem Version](https://badge.fury.io/rb/narou.svg)](http://badge.fury.io/rb/narou)
-[![Join the chat at https://gitter.im/whiteleaf7/narou](https://badges.gitter.im/whiteleaf7/narou.svg)](https://gitter.im/whiteleaf7/narou?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+> **專為網路小說愛好者設計的小說下載、縱書直排電子書轉換與書架管理工具。**  
+> 支援 Kindle、Kobo、Apple Books (iBooks) 等主流電子書閱讀設備與手機/平板。
 
-概要 - Summary
---------------
-このアプリは[小説家になろう](http://syosetu.com/)などで公開されている小説の管理、
-及び電子書籍データへの変換を支援します。縦書き用に特化されており、
-横書きに最適化されたWEB小説を違和感なく縦書きで読むことが出来るようになります。
-また、校正機能もありますので、小説としての一般的な整形ルールに矯正します。（例：感嘆符のあとにはスペースが必ずくる）
+---
 
-小説家になろうを含めて、下記のサイトに対応しています。
-+ 小説家になろう http://syosetu.com/
-+ ノクターンノベルズ http://noc.syosetu.com/
-+ ムーンライトノベルズ http://mnlt.syosetu.com/
-+ ミッドナイトノベルズ http://mid.syosetu.com/
-+ ハーメルン https://syosetu.org/
-+ Arcadia http://www.mai-net.net/
-+ 暁 http://www.akatsuki-novels.com/ （※300話以上ある作品は未対応）
-+ カクヨム https://kakuyomu.jp/
+## 🌟 核心特色
 
-コンソールで操作するアプリケーションですが、ブラウザを使って直感的に操作することができる WEB UI も搭載！（[デモページ](http://whiteleaf7.github.io/narou/demo/)）
+- **零命令列一鍵啟動**：內建專屬桌面捷徑與啟動器，**雙擊即可自動開啟瀏覽器**，無需輸入任何指令。
+- **現代化繁體中文 Web 介面**：依循專業 UI/UX 規範打造，版面清爽典雅，支援**深色/淺色主題**即時切換。
+- **雙重視圖自由切換**：
+  - **書架卡片模式（Grid View）**：精美電子書封面卡片，直觀預覽來源站點、連載狀態、話數與最新更新日期。
+  - **精煉清單模式（List View）**：適合大量作品集中管理，支援多維欄位排序與快速檢索。
+- **批次操作浮動工具列**：勾選多部小說時底部優雅滑出，支援**一鍵批次更新、批次轉檔、批次傳送與刪除**。
+- **首次使用引導精靈（Setup Wizard）**：初次啟動時由圖形介面引導配置閱讀設備、AozoraEpub3 與排版行高，徹底免除 `narou init`。
+- **智慧目錄識別**：自動向上跨層偵測磁碟既有小說庫，無縫銜接您已下載過的小說檔案。
+- **多網址快速批次下載**：支援一次貼上多行網址，自動辨識網站來源，可勾選下載後立即自動轉檔。
+- **即時終端日誌抽屜**：懸浮任務狀態氣泡，展開後可實時監看轉檔進度條與彩色串流日誌，支援一鍵複製與清空。
 
-主な機能は小説家になろうの小説のダウンロード、更新管理、テキスト整形、AozoraEpub3・kindlegen連携によるEPUB/MOBI出力です。  
-その他にも変換したデータを直接電子書籍端末へ送信する機能は、メールで送信する機能などもあります。
+---
 
-詳細な説明やインストール方法は **[Narou.rb 説明書](https://github.com/whiteleaf7/narou/wiki)** を御覧ください。
+## 🌐 支援的小說網站
 
-![WEB UI ScreenCapture](https://raw.github.com/wiki/whiteleaf7/narou/images/webui_cap.png)
-![Console ScreenCapture](https://raw.github.com/wiki/whiteleaf7/narou/images/narou_cap.gif)
+系統支援下載並自動排版以下熱門網路小說網站：
 
-更新履歴 - ChangeLog
---------------------
+| 網站名稱 | 網址 |
+| :--- | :--- |
+| **小説家になろう**（成為小說家吧） | <https://syosetu.com/> |
+| **カクヨム** (Kakuyomu) | <https://kakuyomu.jp/> |
+| **ハーメルン** (Hameln) | <https://syosetu.org/> |
+| **ノクターンノベルズ** (Nocturne Novels) | <https://noc.syosetu.com/> |
+| **ムーンライトノベルズ** (Moonlight Novels) | <https://mnlt.syosetu.com/> |
+| **ミッドナイトノベルズ** (Midnight Novels) | <https://mid.syosetu.com/> |
+| **暁** (Akatsuki Novels) | <https://www.akatsuki-novels.com/> |
+| **Arcadia** | <http://www.mai-net.net/> |
 
-3.9.1: 2024-09-19
------------------
-#### 修正内容
-- 小説家になろうの目次修正に対応 #432 @etg-lt
+---
 
-----
+## 🚀 免命令列快速上手
 
-「小説家になろう」は株式会社ヒナプロジェクトの登録商標です
+### 步驟 1：啟動程式
+在資料夾中雙擊以下任一啟動入口：
+- 📌 **[`Narou 小說管理器.lnk`](file:///d:/narou/Narou%20小說管理器.lnk)**（推薦：自帶專屬圖標捷徑，可直接複製至 Windows 桌面）
+- 📄 **[`Narou-Launcher.bat`](file:///d:/narou/Narou-Launcher.bat)**（標準一鍵啟動批次檔，純 ASCII 安全編碼）
+- 🔕 **[`Narou-Launcher.vbs`](file:///d:/narou/Narou-Launcher.vbs)**（完全無命令列黑視窗的靜默背景啟動）
+
+伺服器啟動後，系統將自動於您的預設瀏覽器中開啟控制面板（預設網址為 `http://127.0.0.1:27577/`）。
+
+### 步驟 2：下載小說
+1. 點擊頂部導航列的 **「+ 下載小說」** 按鈕。
+2. 在文字方塊中貼上小說網址（支援多行同時貼上多部作品）。
+3. 勾選「下載完成後自動轉檔為電子書」，點擊 **「開始下載」**。
+4. 系統將自動加入背景佇列，您可以點擊右下角「終端日誌」即時查看章節下載與排版進度。
+
+### 步驟 3：閱讀與匯出
+- **下載電子書**：在小說卡片或清單上點擊下載圖標，即可直接下載標準直排 `.epub` 檔案。
+- **查看故事大綱**：點擊書名即可彈出查看原站完整故事簡介（あらすじ）與原著連結。
+- **傳送至設備**：透過 USB 連接 Kindle/Kobo，或在批次工具列中點擊「傳送至裝置」。
+
+---
+
+## ⚙️ 外部工具與轉檔設定
+
+### AozoraEpub3 (電子書排版核心)
+- 本系統仰賴 **AozoraEpub3** 將抓取的小說純文字格式化為符合日本/中文閱讀習慣的高品質直排（縱書）EPUB 電子書。
+- 系統已內建智慧路徑偵測，若安裝在常用目錄（例如 `D:/AozoraEpub3` 或專案同層目錄），系統將**自動識別，無需手動設定**。
+- 您也可以隨時點擊頂部齒輪圖標進入「環境設定」自訂 AozoraEpub3 路徑。
+
+### Kindle 支援說明
+- **現代 Kindle 已全面原生支援直排 EPUB 格式**：使用 Amazon 官方提供的 [Send to Kindle](https://www.amazon.com/sendtokindle) 網頁或電子郵件傳送 EPUB 檔案，亞馬遜會自動轉換並同步至您的 Kindle 閱讀器。
+- 因此，在無安裝 KindleGen 的環境下，閱讀裝置推薦設定為 **`EPUB`**，即可享受到最佳的排版與字體呈現。
+
+---
+
+## 💡 常見問題解答 (FAQ)
+
+#### Q1：雙擊啟動後沒有自動跳出瀏覽器？
+* 請手動在瀏覽器網址列輸入 `http://127.0.0.1:27577/` 即可進入。
+* 系統預設已設定綁定本機 `127.0.0.1`，不受 Windows 防火牆阻擋。
+
+#### Q2：我原本在硬碟已下載過小說，如何載入？
+* 系統已內建跨層目錄辨識機制，若您以前曾在磁碟根目錄（如 `D:\`）運行過 narou，程式啟動時會自動偵測並直接載入既有小說資料庫，**完全不需要重新執行 `narou init`**。
+
+#### Q3：不想讓特定小說被自動更新覆蓋？
+* 在小說卡片上點擊 **「鎖定」**（或於清單中勾選後點擊批次列的「切換鎖定」），小說狀態將標記為「已鎖定更新」，執行「全部更新」時會自動跳過此作品。
+
+#### Q4：如何切換回原本的舊版介面？
+* 頂部導航列右上角提供 **「切換舊版」** 快捷按鈕，或直接在網址後加上 `/legacy`（例如 `http://127.0.0.1:27577/legacy`），隨時可無縫體驗舊版相容介面。
+
+---
+
+## 📜 授權與聲明
+
+- 本專案核心遵循 [MIT License](LICENSE.txt)。
+- 「小説家になろう」為株式會社 HinaProject（株式会社ヒナプロジェクト）之註冊商標。
+- 原作者：[whiteleaf7](https://github.com/whiteleaf7/narou)
+- 現代繁體中文 UI 重構與免命令列增強：[stormchen](https://github.com/stormchen)

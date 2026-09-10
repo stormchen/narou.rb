@@ -48,12 +48,14 @@ module Command
 また、起動したサーバを止めるにはコンソール上で Ctrl+C を入力するか、ブラウザ上で「設定(歯車マーク)→サーバをシャットダウン」を実行して下さい。
 
         EOS
-        if @options["no-browser"]
-          puts "(何かキーを押して下さい)"
-        else
-          puts "(何かキーを押して下さい。サーバ起動後ブラウザが立ち上がります)"
+        if $stdin.tty?
+          if @options["no-browser"]
+            puts "(何かキーを押して下さい)"
+          else
+            puts "(何かキーを押して下さい。サーバ起動後ブラウザが立ち上がります)"
+          end
+          $stdin.getch rescue nil
         end
-        $stdin.getch
         setting["already-server-boot"] = true
         setting.save
       end

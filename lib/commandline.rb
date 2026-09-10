@@ -22,7 +22,10 @@ module CommandLine
     end
     unless STDIN.tty?
       # pipeで接続された場合、標準入力からIDリストを受け取って引数に繋げる
-      argv += (STDIN.gets || "").split
+      # 非ブロッキングで標準入力がある場合のみ読み込む
+      if IO.select([STDIN], nil, nil, 0.05)
+        argv += (STDIN.gets || "").split
+      end
     end
     command = Command.get_list[cmd_name]
     if catch_exit

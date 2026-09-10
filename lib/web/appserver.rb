@@ -201,6 +201,31 @@ class Narou::AppServer < Sinatra::Base
   end
 
   get "/" do
+    if params["legacy"] == "1"
+      setting = Inventory.load("server_setting", :global)
+      @is_first_access = !setting["already-accessed"]
+      if @is_first_access
+        setting["already-accessed"] = true
+        setting.save
+      end
+      haml :index, layout: true
+    else
+      modern_index_path = File.join(settings.public_folder, "app", "index.html")
+      if File.exist?(modern_index_path)
+        send_file modern_index_path
+      else
+        setting = Inventory.load("server_setting", :global)
+        @is_first_access = !setting["already-accessed"]
+        if @is_first_access
+          setting["already-accessed"] = true
+          setting.save
+        end
+        haml :index, layout: true
+      end
+    end
+  end
+
+  get "/legacy" do
     setting = Inventory.load("server_setting", :global)
     @is_first_access = !setting["already-accessed"]
     if @is_first_access
@@ -911,6 +936,137 @@ class Narou::AppServer < Sinatra::Base
     story = toc["story"] || ""
     html = HTML.new
     json title: toc["title"], story: html.ln_to_br(story.strip)
+  end
+
+  # -------------------------------------------------------------------------------
+  # 現代化 UI 擴充 API (Modern Web UI APIs)
+  # -------------------------------------------------------------------------------
+
+  get "/api/system/status" do
+    content_type :json
+    global_setting = Inventory.load("global_setting", :global)
+    local_setting = Inventory.load("local_setting", :local)
+    device = Narou.get_device
+
+    aozora_dir = global_setting["aozoraepub3dir"]
+    detected_aozora = nil
+    [aozora_dir, "D:/AozoraEpub3", "C:/AozoraEpub3", File.expand_path("../AozoraEpub3", Narou.root_dir)].compact.each do |dir|
+      if File.exist?(File.join(dir, "AozoraEpub3.jar"))
+        detected_aozora = dir.tr("\\", "/")
+        break
+      end
+    end
+
+    kindlegen_path = global_setting["kindlegen_path"]
+    kindlegen_exists = kindlegen_path && File.exist?(kindlegen_path)
+
+    novels_count = Database.instance.get_object.values.size
+
+    json({
+      initialized: Narou.already_init?,
+      root_dir: Narou.root_dir,
+      device: device ? device.name : (local_setting["device"] || "epub"),
+      device_name: device ? device.display_name : "EPUB (通用格式)",
+      aozoraepub3_dir: aozora_dir ? aozora_dir.tr("\\", "/") : detected_aozora,
+      aozoraepub3_exists: !detected_aozora.nil?,
+      kindlegen_path: kindlegen_path,
+      kindlegen_exists: !!kindlegen_exists,
+      novels_count: novels_count,
+      ruby_version: RUBY_VERSION,
+      narou_version: Narou::VERSION,
+      server_port: settings.port,
+      line_height: local_setting["line-height"] || 1.8,
+      os: RUBY_PLATFORM
+    })
+  end
+
+  post "/api/system/setup" do
+    content_type :json
+    payload = request.body.size > 0 ? (JSON.parse(request.body.read) rescue params) : params
+    device_name = payload["device"]
+    aozora_dir = payload["aozoraepub3_dir"]
+    line_height = payload["line_height"]
+
+    built_args = []
+    if device_name && !device_name.empty?
+      built_args << "device=#{device_name}"
+    end
+    if aozora_dir && !aozora_dir.empty? && File.exist?(aozora_dir)
+      global_setting = Inventory.load("global_setting", :global)
+      global_setting["aozoraepub3dir"] = aozora_dir.tr("\\", "/")
+      global_setting.save
+    end
+    if line_height
+      local_setting = Inventory.load("local_setting", :local)
+      local_setting["line-height"] = line_height.to_f
+      local_setting.save
+    end
+
+    unless built_args.empty?
+      setting = Command::Setting.new
+      setting.execute!(built_args, io: Narou::NullIO.new)
+      Inventory.clear
+    end
+
+    unless Narou.already_init?
+      Narou.init
+    end
+
+    json({ success: true, message: "系統設定已更新完成" })
+  end
+
+  post "/api/novels/batch" do
+    content_type :json
+    payload = request.body.size > 0 ? (JSON.parse(request.body.read) rescue params) : params
+    action = payload["action"]
+    ids = Array(payload["ids"]).map(&:to_s).reject(&:empty?)
+
+    case action
+    when "download"
+      targets = Array(payload["targets"]).map(&:to_s).reject(&:empty?)
+      if targets.empty? && payload["target"]
+        targets = payload["target"].to_s.split
+      end
+      if targets.any?
+        opt_mail = payload["mail"] ? "--mail" : nil
+        Narou::WebWorker.push do
+          CommandLine.run!(["download", *targets, opt_mail].compact)
+          @@push_server.send_all(:"table.reload")
+        end
+      end
+    when "update"
+      force = payload["force"] ? ["--force"] : []
+      Narou::WebWorker.push do
+        CommandLine.run!(["update", *force, *ids])
+        @@push_server.send_all(:"table.reload")
+      end
+    when "convert"
+      concurrency_push do
+        CommandLine.run!(["convert", "--no-open", *ids])
+      end
+    when "send"
+      concurrency_push do
+        CommandLine.run!(["send", *ids])
+      end
+    when "freeze_on"
+      ids.each { |id| Narou.novel_freeze!(id, true) }
+      @@push_server.send_all(:"table.reload")
+    when "freeze_off"
+      ids.each { |id| Narou.novel_freeze!(id, false) }
+      @@push_server.send_all(:"table.reload")
+    when "remove"
+      Narou::WebWorker.push do
+        CommandLine.run!(["remove", "-y", *ids])
+        @@push_server.send_all(:"table.reload")
+      end
+    when "remove_with_file"
+      Narou::WebWorker.push do
+        CommandLine.run!(["remove", "-y", "--with-file", *ids])
+        @@push_server.send_all(:"table.reload")
+      end
+    end
+
+    json({ success: true, action: action, count: ids.size })
   end
 
   # -------------------------------------------------------------------------------

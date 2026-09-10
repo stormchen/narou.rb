@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Narou 小說管理器 - 繁體中文現代版</title>
+  <link rel="stylesheet" href="/app/app.css">
+</head>
+<body>
+
+  <!-- 頂部現代導航列 -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 6h10"/>
+            <path d="M6 10h10"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <span class="brand-title">Narou 小說管理器</span>
+          <span class="brand-subtitle" id="appVersionText">Narou.rb 現代極簡版</span>
+        </div>
+        <div class="server-status-pill" id="serverStatusPill" title="伺服器與 WebSocket 連線狀態">
+          <span class="status-dot" id="wsStatusDot"></span>
+          <span id="wsStatusText">連線中...</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- 快捷操作 -->
+        <button class="btn btn-primary" id="btnOpenDownloadModal" title="貼上網址下載小說">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+          <span>下載小說</span>
+        </button>
+
+        <button class="btn btn-outline" id="btnUpdateAll" title="檢查並更新所有未鎖定的小說">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 16h5v5"/>
+          </svg>
+          <span>全部更新</span>
+        </button>
+
+        <!-- 工具列按鈕 -->
+        <button class="btn-icon" id="btnToggleTheme" title="切換深色/淺色主題">
+          <svg id="iconThemeMoon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+          </svg>
+        </button>
+
+        <button class="btn-icon" id="btnOpenSettingsModal" title="環境設定">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+
+        <a href="/legacy" class="btn btn-ghost btn-sm" title="切換回原本的舊版介面">切換舊版</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要內容區 -->
+  <main class="main-content">
+
+    <!-- 頂部控制與篩選列 -->
+    <section class="control-bar">
+      <div class="control-bar-top">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="搜尋書名、作者或小說 ID...">
+        </div>
+
+        <div class="filter-group">
+          <!-- 狀態篩選 -->
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="serializing">連載中</button>
+          <button class="filter-btn" data-filter="completed">已完結</button>
+          <button class="filter-btn" data-filter="frozen">已鎖定更新</button>
+
+          <!-- 檢視切換 (書架卡片 / 清單表格) -->
+          <div class="view-toggle">
+            <button class="view-btn active" id="viewBtnGrid" title="書架卡片檢視">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/>
+                <rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
+              </svg>
+            </button>
+            <button class="view-btn" id="viewBtnList" title="清單表格檢視">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/>
+                <line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 標籤雲快速過濾 -->
+      <div class="tags-cloud" id="tagsCloud">
+        <span class="tags-title">熱門標籤：</span>
+        <!-- 動態注入標籤 -->
+      </div>
+    </section>
+
+    <!-- 小說主要清單展示區 (卡片視圖) -->
+    <div id="novelGridContainer" class="novel-grid">
+      <!-- 動態注入卡片 -->
+    </div>
+
+    <!-- 小說主要清單展示區 (表格視圖) -->
+    <div id="novelTableContainer" class="table-container" style="display: none;">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
+            <th style="width: 70px;">ID</th>
+            <th>小說名稱</th>
+            <th style="width: 130px;">作者</th>
+            <th style="width: 80px;">話數</th>
+            <th style="width: 100px;">狀態</th>
+            <th>標籤</th>
+            <th style="width: 130px;">最後更新</th>
+            <th style="width: 180px; text-align: right;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="novelTableBody">
+          <!-- 動態注入表格行 -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 空狀態提示 (Empty State) -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+          <path d="M8 7h8"/><path d="M8 11h8"/>
+        </svg>
+      </div>
+      <h3 class="empty-title">您的書架目前尚無任何小說</h3>
+      <p class="empty-desc">您可以立即點擊下方按鈕貼上「小說家になろう」或「カクヨム」的小說網址，系統將自動為您下載並排版為高品質電子書！</p>
+      <div style="display: flex; gap: 10px; margin-top: 6px;">
+        <button class="btn btn-primary" id="btnEmptyDownload">下載第一本小說</button>
+        <button class="btn btn-outline" id="btnEmptySetup">啟動首次設定引導</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 批次操作懸浮列 (Batch Action Bar) -->
+  <aside class="batch-floating-bar" id="batchFloatingBar">
+    <div class="batch-count" id="batchCountText">已選取 0 部小說</div>
+    <button class="btn btn-sm btn-primary" id="btnBatchUpdate">批次更新</button>
+    <button class="btn btn-sm btn-outline" id="btnBatchConvert">批次轉檔</button>
+    <button class="btn btn-sm btn-outline" id="btnBatchSend">傳送至裝置</button>
+    <button class="btn btn-sm btn-outline" id="btnBatchFreeze">切換鎖定</button>
+    <button class="btn btn-sm btn-danger" id="btnBatchDelete">刪除</button>
+    <button class="btn-icon btn-sm" id="btnCancelBatch" title="取消全選" style="border: none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  </aside>
+
+  <!-- 右下角懸浮任務狀態泡泡 -->
+  <div class="floating-queue-btn" id="btnToggleConsole">
+    <svg id="queueSpinnerIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
+    </svg>
+    <span>終端日誌</span>
+    <span class="queue-badge" id="queueCountBadge">0</span>
+  </div>
+
+  <!-- 終端日誌抽屜 (Console Drawer) -->
+  <aside class="console-drawer" id="consoleDrawer">
+    <div class="console-header">
+      <div class="console-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
+        </svg>
+        <span>Narou 即時後台任務與日誌監控</span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn btn-ghost btn-sm" id="btnClearConsole" title="清空螢幕">清空</button>
+        <button class="btn btn-ghost btn-sm" id="btnCopyConsole" title="複製日誌">複製</button>
+        <button class="btn-icon btn-sm" id="btnCloseConsole" style="background: transparent; border: none; color: #8B949E;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="console-body" id="consoleLogs">Narou Web UI 已連線就緒。日誌將即時串流至此...</div>
+  </aside>
+
+  <!-- 首次使用設定引導精靈 (Setup Wizard Modal) -->
+  <div class="modal-backdrop" id="wizardModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">歡迎使用 Narou 小說管理器 - 首次設定引導</h3>
+        <button class="btn-icon btn-sm" id="btnCloseWizard" style="border: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="wizard-steps">
+          <div class="wizard-step active" id="stepIndicator1">
+            <div class="wizard-step-circle">1</div>
+            <div class="wizard-step-title">閱讀設備</div>
+          </div>
+          <div class="wizard-step" id="stepIndicator2">
+            <div class="wizard-step-circle">2</div>
+            <div class="wizard-step-title">AozoraEpub3</div>
+          </div>
+          <div class="wizard-step" id="stepIndicator3">
+            <div class="wizard-step-circle">3</div>
+            <div class="wizard-step-title">版面偏好</div>
+          </div>
+        </div>
+
+        <div id="wizardStep1Content">
+          <div class="form-group">
+            <label class="form-label">選擇您常用的電子書設備</label>
+            <select class="form-control" id="wizardDeviceSelect">
+              <option value="epub">EPUB (通用格式 / iPad / 手機 / 現代 Kindle 推薦)</option>
+              <option value="kindle">Kindle (Paperwhite / Oasis / Scribe)</option>
+              <option value="kobo">Kobo (Libra / Clara / Forma)</option>
+              <option value="ibooks">Apple Books (iPhone / iPad / Mac)</option>
+            </select>
+            <span class="form-hint">Amazon 目前已全面支援直接傳送 EPUB 檔案至 Kindle 閱讀。如果您使用 Send to Kindle，選擇 EPUB 或 Kindle 皆可。</span>
+          </div>
+        </div>
+
+        <div id="wizardStep2Content" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">AozoraEpub3 轉檔工具目錄</label>
+            <input type="text" class="form-control" id="wizardAozoraPath" placeholder="例如 D:/AozoraEpub3">
+            <span class="form-hint" id="wizardAozoraStatus">系統將自動檢測此路徑。AozoraEpub3 是將網路小說轉換為標準直排電子書的核心工具。</span>
+          </div>
+        </div>
+
+        <div id="wizardStep3Content" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">直排閱讀行高設定 (預設推薦 1.8em)</label>
+            <input type="number" step="0.1" class="form-control" id="wizardLineHeight" value="1.8">
+            <span class="form-hint">合適的行高能顯著改善直排中文/日文小說在電子墨水螢幕上的閱讀舒適度。</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnWizardPrev" style="display: none;">上一步</button>
+        <button class="btn btn-primary" id="btnWizardNext">下一步</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下載小說彈窗 (Download Modal) -->
+  <div class="modal-backdrop" id="downloadModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">下載網路小說</h3>
+        <button class="btn-icon btn-sm" id="btnCloseDownloadModal" style="border: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">貼上小說網址 (支援多行同時貼上)</label>
+          <textarea class="form-control" id="downloadUrlInput" rows="5" placeholder="https://ncode.syosetu.com/n1234xx/&#10;https://kakuyomu.jp/works/123456..."></textarea>
+          <span class="form-hint">支援「小説家になろう」、「カクヨム」、「ハーメルン」、「ノクターンノベルズ」等網站。</span>
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 4px;">
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="downloadAutoConvert" checked style="accent-color: var(--color-primary);">
+            <span>下載完成後自動轉檔為電子書</span>
+          </label>
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="downloadAutoMail" style="accent-color: var(--color-primary);">
+            <span>傳送至 Kindle 信箱</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelDownload">取消</button>
+        <button class="btn btn-primary" id="btnSubmitDownload">開始下載</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 小說詳情與大綱彈窗 (Detail Modal) -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailModalTitle">小說故事大綱</h3>
+        <button class="btn-icon btn-sm" id="btnCloseDetailModal" style="border: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; color: var(--color-text-muted);" id="detailAuthorInfo"></div>
+          <div style="font-size: 12px; color: var(--color-text-sub);" id="detailSiteInfo"></div>
+        </div>
+        <div style="border-top: 1px solid var(--color-border); padding-top: 12px;">
+          <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">故事大綱（あらすじ）</h4>
+          <div id="detailStoryContent" style="font-size: 13px; line-height: 1.7; color: var(--color-text-main); max-height: 280px; overflow-y: auto; background: var(--color-bg); padding: 12px; border-radius: var(--radius-md);">載入中...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="detailOpenOriginalLink" target="_blank" class="btn btn-outline btn-sm">前往原著網站</a>
+        <button class="btn btn-primary btn-sm" id="btnCloseDetailBtn">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 環境設定中心彈窗 (Settings Modal) -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-dialog" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Narou 環境與進階設定</h3>
+        <button class="btn-icon btn-sm" id="btnCloseSettingsModal" style="border: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-tabs">
+          <button class="tab-btn active" data-tab="tabGeneral">一般設定</button>
+          <button class="tab-btn" data-tab="tabConvert">轉檔與電子書</button>
+          <button class="tab-btn" data-tab="tabSystem">系統資訊</button>
+        </div>
+
+        <!-- 頁籤 1: 一般設定 -->
+        <div class="tab-content active" id="tabGeneral">
+          <div class="form-group">
+            <label class="form-label">預設閱讀設備 (Device)</label>
+            <select class="form-control" id="settingDevice">
+              <option value="epub">EPUB (通用格式)</option>
+              <option value="kindle">Kindle</option>
+              <option value="kobo">Kobo</option>
+              <option value="ibooks">Apple Books</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">電子書排版行高 (Line Height)</label>
+            <input type="number" step="0.1" class="form-control" id="settingLineHeight" value="1.8">
+            <span class="form-hint">推薦設為 1.8em。</span>
+          </div>
+        </div>
+
+        <!-- 頁籤 2: 轉檔與電子書 -->
+        <div class="tab-content" id="tabConvert">
+          <div class="form-group">
+            <label class="form-label">AozoraEpub3 程式目錄路徑</label>
+            <input type="text" class="form-control" id="settingAozoraDir" placeholder="例如 D:/AozoraEpub3">
+            <span class="form-hint" id="settingAozoraStatusText">狀態偵測中...</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">KindleGen 執行檔路徑 (選填)</label>
+            <input type="text" class="form-control" id="settingKindlegenPath" placeholder="若使用 Send to Kindle 傳送 EPUB 則無需設定">
+            <span class="form-hint">Amazon 目前已支援 EPUB 格式，若無 kindlegen 不影響 EPUB 轉檔與閱讀。</span>
+          </div>
+        </div>
+
+        <!-- 頁籤 3: 系統資訊 -->
+        <div class="tab-content" id="tabSystem">
+          <div style="background: var(--color-bg); padding: 14px; border-radius: var(--radius-md); font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+            <div><strong>Narou 版本：</strong> <span id="sysNarouVer">-</span></div>
+            <div><strong>Ruby 版本：</strong> <span id="sysRubyVer">-</span></div>
+            <div><strong>工作目錄：</strong> <span id="sysRootDir">-</span></div>
+            <div><strong>作業系統：</strong> <span id="sysOs">-</span></div>
+            <div><strong>已下載小說總數：</strong> <span id="sysNovelsCount">-</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelSettings">取消</button>
+        <button class="btn btn-primary" id="btnSaveSettings">儲存設定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 訊息通知容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- 核心腳本 -->
+  <script src="/app/app.js"></script>
+</body>
+</html>
