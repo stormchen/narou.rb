@@ -302,6 +302,55 @@
     </div>
   </div>
 
+  <!-- 轉檔選項彈窗 (Convert Modal) -->
+  <div class="modal-backdrop" id="convertModal">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">電子書轉檔選項</h3>
+        <button class="btn-icon btn-sm" id="btnCloseConvertModal" style="border: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: 14px; font-weight: 600; color: var(--color-primary);" id="convertTargetTitle">小說標題</div>
+        
+        <div class="form-group" style="margin-top: 6px;">
+          <label class="form-label">選擇轉換語言與模式</label>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: var(--color-bg);">
+              <input type="radio" name="convertTranslateOption" value="false" checked style="margin-top: 3px; accent-color: var(--color-primary);">
+              <div>
+                <div style="font-weight: 600; font-size: 14px;">🇯🇵 日文原版直排（不翻譯）</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">保留原文小說內容，轉檔極為迅速（約 2~5 秒）。</div>
+              </div>
+            </label>
+            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: var(--color-bg);">
+              <input type="radio" name="convertTranslateOption" value="true" style="margin-top: 3px; accent-color: var(--color-primary);">
+              <div>
+                <div style="font-weight: 600; font-size: 14px;">🇹🇼 AI 繁體中文翻譯直排</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">使用配置的 AI 模型將日文自動翻譯為繁體中文直排電子書。</div>
+                <div style="font-size: 11px; color: var(--color-accent); margin-top: 4px;" id="convertCurrentModelNotice">目前 AI 模型：載入中...</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 2px;">
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
+            <input type="checkbox" id="convertRetranslateCheck" style="accent-color: var(--color-primary);">
+            <span>強制重新翻譯（忽略既有快取）</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelConvert">取消</button>
+        <button class="btn btn-primary" id="btnSubmitConvert">開始轉檔</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 小說詳情與大綱彈窗 (Detail Modal) -->
   <div class="modal-backdrop" id="detailModal">
     <div class="modal-dialog">
@@ -345,6 +394,7 @@
         <div class="settings-tabs">
           <button class="tab-btn active" data-tab="tabGeneral">一般設定</button>
           <button class="tab-btn" data-tab="tabConvert">轉檔與電子書</button>
+          <button class="tab-btn" data-tab="tabTranslate">🤖 AI 翻譯與模型</button>
           <button class="tab-btn" data-tab="tabSystem">系統資訊</button>
         </div>
 
@@ -377,6 +427,64 @@
             <label class="form-label">KindleGen 執行檔路徑 (選填)</label>
             <input type="text" class="form-control" id="settingKindlegenPath" placeholder="若使用 Send to Kindle 傳送 EPUB 則無需設定">
             <span class="form-hint">Amazon 目前已支援 EPUB 格式，若無 kindlegen 不影響 EPUB 轉檔與閱讀。</span>
+          </div>
+        </div>
+
+        <!-- 頁籤 3: AI 翻譯與模型設置 -->
+        <div class="tab-content" id="tabTranslate">
+          <div class="form-group">
+            <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="settingTranslateEnable" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <span>預設啟用 AI 翻譯功能 (Translate Enable)</span>
+            </label>
+            <span class="form-hint">開啟後，電子書轉檔時會預設將日文小說翻譯為繁體中文（亦可在轉檔時單次自由切換）。</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">翻譯引擎 (Translation Engine)</label>
+            <select class="form-control" id="settingTranslateEngine">
+              <option value="gemini">Google Gemini (推薦：速度快、品質高、具免費額度)</option>
+              <option value="openai">OpenAI / 相容架構 (支援 Ollama、Sakura 輕小說模型、DeepSeek、OpenAI)</option>
+              <option value="web">Google Web 免費網頁翻譯 (免 API Key 免費翻譯)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="groupTranslateApiKey">
+            <label class="form-label">API 金鑰 (API Key)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="password" class="form-control" id="settingTranslateApiKey" placeholder="請輸入 API Key (如 Gemini 或 OpenAI/DeepSeek Key)" style="flex: 1;">
+              <button type="button" class="btn btn-outline btn-sm" id="btnToggleApiKeyVisibility">顯示</button>
+            </div>
+            <span class="form-hint">若使用本地端 Ollama 則無需填寫。</span>
+          </div>
+
+          <div class="form-group" id="groupTranslateModel">
+            <label class="form-label">AI 模型名稱 (Model Name)</label>
+            <input type="text" class="form-control" id="settingTranslateModel" placeholder="例如 gemini-1.5-flash 或 sakura-best">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+              <button type="button" class="btn btn-sm btn-outline btn-quick-model" data-model="gemini-1.5-flash">gemini-1.5-flash</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-model" data-model="gemini-2.0-flash">gemini-2.0-flash</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-model" data-model="deepseek-chat">deepseek-chat</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-model" data-model="gpt-4o-mini">gpt-4o-mini</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-model" data-model="sakura-best">sakura-best</button>
+            </div>
+          </div>
+
+          <div class="form-group" id="groupTranslateEndpoint">
+            <label class="form-label">API 端點 URL (Endpoint)</label>
+            <input type="text" class="form-control" id="settingTranslateEndpoint" placeholder="例如 http://localhost:11434/v1 或 https://api.deepseek.com/v1">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+              <button type="button" class="btn btn-sm btn-outline btn-quick-endpoint" data-endpoint="http://localhost:11434/v1">Ollama 本機 (localhost:11434)</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-endpoint" data-endpoint="https://api.deepseek.com/v1">DeepSeek 官方端點</button>
+              <button type="button" class="btn btn-sm btn-outline btn-quick-endpoint" data-endpoint="https://api.openai.com/v1">OpenAI 官方端點</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; background: var(--color-bg); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div>
+              <button type="button" class="btn btn-outline btn-sm" id="btnTestTranslate">⚡ 測試 AI 翻譯連線</button>
+            </div>
+            <div id="translateTestResult" style="font-size: 12px; font-weight: 500;"></div>
           </div>
         </div>
 

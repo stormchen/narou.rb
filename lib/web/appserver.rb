@@ -547,9 +547,22 @@ class Narou::AppServer < Sinatra::Base
 
   post "/api/convert" do
     ids = select_valid_novel_ids(params["ids"]) or pass
-    concurrency_push do
-      CommandLine.run!("convert", "--no-open", ids)
+    opt_translate = []
+    if params["translate"] == "true"
+      opt_translate << "--translate"
+    elsif params["translate"] == "false"
+      opt_translate << "--no-translate"
     end
+    if params["retranslate"] == "true"
+      opt_translate << "--retranslate"
+    end
+
+    concurrency_push do
+      CommandLine.run!("convert", "--no-open", *opt_translate, ids)
+      @@push_server.send_all(:"table.reload")
+      @@push_server.send_all(:"convert.finished" => { ids: ids })
+    end
+    json({ success: true, queued: true, ids: ids })
   end
 
   post "/api/download" do
@@ -976,7 +989,15 @@ class Narou::AppServer < Sinatra::Base
       narou_version: Narou::VERSION,
       server_port: settings.port,
       line_height: local_setting["line-height"] || 1.8,
-      os: RUBY_PLATFORM
+      os: RUBY_PLATFORM,
+      # 翻譯與 AI 模型設定
+      translate_enable: global_setting["translate.enable"] == true,
+      translate_engine: global_setting["translate.engine"] || "openai",
+      translate_endpoint: global_setting["translate.endpoint"] || "http://localhost:11434/v1",
+      translate_model: global_setting["translate.model"] || "sakura-best",
+      translate_api_key: global_setting["translate.api_key"] || "",
+      translate_chunk_size: global_setting["translate.chunk_size"] || 600,
+      translate_max_retries: global_setting["translate.max_retries"] || 3
     })
   end
 
@@ -986,13 +1007,13 @@ class Narou::AppServer < Sinatra::Base
     device_name = payload["device"]
     aozora_dir = payload["aozoraepub3_dir"]
     line_height = payload["line_height"]
+    global_setting = Inventory.load("global_setting", :global)
 
     built_args = []
     if device_name && !device_name.empty?
       built_args << "device=#{device_name}"
     end
     if aozora_dir && !aozora_dir.empty? && File.exist?(aozora_dir)
-      global_setting = Inventory.load("global_setting", :global)
       global_setting["aozoraepub3dir"] = aozora_dir.tr("\\", "/")
       global_setting.save
     end
@@ -1000,6 +1021,18 @@ class Narou::AppServer < Sinatra::Base
       local_setting = Inventory.load("local_setting", :local)
       local_setting["line-height"] = line_height.to_f
       local_setting.save
+    end
+
+    # 儲存翻譯與 AI 模型設定
+    ["translate.enable", "translate.engine", "translate.endpoint", "translate.model", "translate.api_key", "translate.chunk_size", "translate.max_retries"].each do |key|
+      field = key.sub(".", "_")
+      if payload.key?(field)
+        val = payload[field]
+        val = (val == true || val == "true") if key == "translate.enable"
+        val = val.to_i if key == "translate.chunk_size" || key == "translate.max_retries"
+        global_setting[key] = val
+        global_setting.save
+      end
     end
 
     unless built_args.empty?
@@ -1013,6 +1046,45 @@ class Narou::AppServer < Sinatra::Base
     end
 
     json({ success: true, message: "系統設定已更新完成" })
+  end
+
+  post "/api/translate/test" do
+    content_type :json
+    payload = request.body.size > 0 ? (JSON.parse(request.body.read) rescue params) : params
+    engine_type = (payload["engine"] || "openai").to_s.downcase
+    opts = {
+      endpoint: payload["endpoint"],
+      api_key: payload["api_key"],
+      model: payload["model"],
+      chunk_size: 200,
+      max_retries: 0
+    }.compact
+
+    begin
+      require_relative "../narou/translator"
+      engine = case engine_type
+               when "gemini"
+                 Narou::Translator::GeminiEngine.new(opts)
+               when "web"
+                 Narou::Translator::WebEngine.new(opts)
+               else
+                 Narou::Translator::OpenAIEngine.new(opts)
+               end
+      test_text = "こんにちは、世界！"
+      require "timeout"
+      translated = Timeout.timeout(5) do
+        engine.translate(test_text)
+      end
+      if translated && !translated.strip.empty?
+        json({ success: true, source: test_text, translated: translated.strip, engine: engine_type })
+      else
+        json({ success: false, error: "翻譯結果為空" })
+      end
+    rescue Timeout::Error
+      json({ success: false, error: "連線逾時 (5秒)，請檢查端點 URL 是否正確，或本機 Ollama 服務是否已啟動。" })
+    rescue => e
+      json({ success: false, error: e.message })
+    end
   end
 
   post "/api/novels/batch" do
@@ -1041,8 +1113,20 @@ class Narou::AppServer < Sinatra::Base
         @@push_server.send_all(:"table.reload")
       end
     when "convert"
+      opt_translate = []
+      if payload["translate"] == true || payload["translate"] == "true"
+        opt_translate << "--translate"
+      elsif payload["translate"] == false || payload["translate"] == "false"
+        opt_translate << "--no-translate"
+      end
+      if payload["retranslate"] == true || payload["retranslate"] == "true"
+        opt_translate << "--retranslate"
+      end
+
       concurrency_push do
-        CommandLine.run!(["convert", "--no-open", *ids])
+        CommandLine.run!(["convert", "--no-open", *opt_translate, *ids])
+        @@push_server.send_all(:"table.reload")
+        @@push_server.send_all(:"convert.finished" => { ids: ids })
       end
     when "send"
       concurrency_push do
