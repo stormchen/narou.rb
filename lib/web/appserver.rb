@@ -1052,10 +1052,31 @@ class Narou::AppServer < Sinatra::Base
     content_type :json
     payload = request.body.size > 0 ? (JSON.parse(request.body.read) rescue params) : params
     engine_type = (payload["engine"] || "openai").to_s.downcase
+    endpoint = (payload["endpoint"] || "").to_s.strip
+    api_key = (payload["api_key"] || "").to_s.strip
+    model = (payload["model"] || "").to_s.strip
+
+    # 若是本機 Ollama，優先進行快速健康檢查 (HTTP GET /api/tags)
+    if engine_type == "openai" && (endpoint.include?("11434") || endpoint.include?("localhost") || endpoint.include?("127.0.0.1"))
+      begin
+        ping_uri = URI.parse(endpoint.sub(%r{/v1/?$}, "").sub(%r{://localhost:11434}, "://127.0.0.1:11434") + "/api/tags")
+        http_ping = Net::HTTP.new(ping_uri.host, ping_uri.port)
+        http_ping.open_timeout = 3
+        http_ping.read_timeout = 3
+        ping_req = Net::HTTP::Get.new(ping_uri.request_uri)
+        ping_res = http_ping.request(ping_req)
+        unless ping_res.is_a?(Net::HTTPSuccess)
+          return json({ success: false, error: "Ollama 服務響應異常 (HTTP #{ping_res.code})，請確認 Ollama 狀態" })
+        end
+      rescue => ping_err
+        return json({ success: false, error: "無法連線至本地 Ollama 服務 (#{ping_err.message})。請確認是否已啟動 Ollama！" })
+      end
+    end
+
     opts = {
-      endpoint: payload["endpoint"],
-      api_key: payload["api_key"],
-      model: payload["model"],
+      endpoint: endpoint.empty? ? nil : endpoint,
+      api_key: api_key.empty? ? nil : api_key,
+      model: model.empty? ? nil : model,
       chunk_size: 200,
       max_retries: 0
     }.compact
@@ -1070,18 +1091,31 @@ class Narou::AppServer < Sinatra::Base
                else
                  Narou::Translator::OpenAIEngine.new(opts)
                end
-      test_text = "こんにちは、世界！"
+
+      test_text = "こんにちは、世界！".encode(Encoding::UTF_8)
       require "timeout"
-      translated = Timeout.timeout(5) do
+      t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      # 本地模型初次載入 GPU/RAM 可能需較長時間，設定 30 秒安全超時
+      translated = Timeout.timeout(30) do
         engine.translate(test_text)
       end
+      t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      duration = ((t1 - t0) * 10).round / 10.0
+
       if translated && !translated.strip.empty?
-        json({ success: true, source: test_text, translated: translated.strip, engine: engine_type })
+        json({
+          success: true,
+          source: test_text,
+          translated: translated.strip,
+          engine: engine_type,
+          model: model.empty? ? "(預設)" : model,
+          duration: "#{duration}s"
+        })
       else
         json({ success: false, error: "翻譯結果為空" })
       end
     rescue Timeout::Error
-      json({ success: false, error: "連線逾時 (5秒)，請檢查端點 URL 是否正確，或本機 Ollama 服務是否已啟動。" })
+      json({ success: false, error: "翻譯請求逾時 (30秒)。模型可能正在載入顯存，或端點無回應。" })
     rescue => e
       json({ success: false, error: e.message })
     end

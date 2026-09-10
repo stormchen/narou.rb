@@ -38,21 +38,23 @@ module Narou
       private
 
       def build_messages(text)
+        utf8_text = text.to_s.dup.force_encoding(Encoding::UTF_8)
         if @model.to_s.downcase.include?("sakura")
           [
-            { role: "system", content: "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成繁体中文，并联系上下文正确使用词汇。保留所有__TAG_开头的特殊标记。" },
-            { role: "user", content: "将下面的日文文本翻译成繁体中文：\n#{text}" }
+            { role: "system", content: "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成繁体中文，并联系上下文正确使用词汇。保留所有__TAG_开头的特殊标记。".dup.force_encoding(Encoding::UTF_8) },
+            { role: "user", content: "将下面的日文文本翻译成繁体中文：\n#{utf8_text}".dup.force_encoding(Encoding::UTF_8) }
           ]
         else
           [
-            { role: "system", content: system_prompt },
-            { role: "user", content: text }
+            { role: "system", content: system_prompt.to_s.dup.force_encoding(Encoding::UTF_8) },
+            { role: "user", content: utf8_text }
           ]
         end
       end
 
       def translate_single_chunk(text)
-        uri = URI.parse("#{@endpoint}/chat/completions")
+        resolved_endpoint = @endpoint.sub(%r{://localhost:11434}, "://127.0.0.1:11434")
+        uri = URI.parse("#{resolved_endpoint}/chat/completions")
         is_sakura = @model.to_s.downcase.include?("sakura")
         max_tokens = [[(text.length * 3).ceil + 256, 512].max, 4096].min
         payload = {
