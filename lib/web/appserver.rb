@@ -546,19 +546,26 @@ class Narou::AppServer < Sinatra::Base
   end
 
   post "/api/convert" do
-    ids = select_valid_novel_ids(params["ids"]) or pass
+    content_type :json
+    payload = request.body.size > 0 ? (JSON.parse(request.body.read) rescue params) : params
+    ids = select_valid_novel_ids(payload["ids"])
+    unless ids
+      status 400
+      return json({ success: false, error: "請指定要轉檔的小說編號 (Invalid novel IDs)" })
+    end
+
     opt_translate = []
-    if params["translate"] == "true"
+    if payload["translate"] == true || payload["translate"] == "true"
       opt_translate << "--translate"
-    elsif params["translate"] == "false"
+    elsif payload["translate"] == false || payload["translate"] == "false"
       opt_translate << "--no-translate"
     end
-    if params["retranslate"] == "true"
+    if payload["retranslate"] == true || payload["retranslate"] == "true"
       opt_translate << "--retranslate"
     end
 
     concurrency_push do
-      CommandLine.run!("convert", "--no-open", *opt_translate, ids)
+      CommandLine.run!(["convert", "--no-open", *opt_translate, *ids])
       @@push_server.send_all(:"table.reload")
       @@push_server.send_all(:"convert.finished" => { ids: ids })
     end

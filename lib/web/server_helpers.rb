@@ -44,8 +44,15 @@ module Narou::ServerHelpers
   # ID が指定されなかったか、１件も存在しない場合は nil を返す
   #
   def select_valid_novel_ids(ids)
-    return nil unless ids.kind_of?(Array)
-    result = ids.select do |id|
+    return nil if ids.nil?
+    array_ids = if ids.is_a?(String)
+                  ids.split(/[\s,]+/)
+                elsif ids.is_a?(Array)
+                  ids
+                else
+                  [ids]
+                end
+    result = array_ids.map(&:to_s).select do |id|
       id =~ /^\d+$/
     end
     result.empty? ? nil : result
