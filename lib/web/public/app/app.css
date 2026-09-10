@@ -938,9 +938,12 @@ textarea.form-control {
   .main-content {
     padding: 16px;
   }
-  .console-drawer {
-    width: 100%;
-    height: 360px;
+  .activity-drawer {
+    width: 100% !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    max-height: 80vh !important;
   }
   .batch-floating-bar {
     width: 92%;
@@ -948,3 +951,321 @@ textarea.form-control {
     gap: 8px;
   }
 }
+
+/* ==========================================================================
+   全域頂部進度光條 (Global Top Progress Bar)
+   ========================================================================== */
+.global-progress-wrap {
+  width: 100%;
+  height: 3px;
+  background: transparent;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 100;
+}
+.global-progress-wrap.active {
+  opacity: 1;
+}
+.global-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899, #3B82F6);
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+  transition: width 0.25s ease;
+  animation: progressGlow 2s linear infinite;
+}
+@keyframes progressGlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* 導航列活動中心指示紅點 */
+.header-activity-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background-color: var(--color-primary);
+  border-radius: 50%;
+  display: none;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+.header-activity-dot.active {
+  display: block;
+  animation: pulseDot 1.5s infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+/* ==========================================================================
+   懸浮活動中心按鈕 (Floating Activity Button)
+   ========================================================================== */
+.floating-activity-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--color-surface);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-full);
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  z-index: var(--z-floating);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+.floating-activity-btn:hover {
+  background: var(--color-surface-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+.activity-btn-spinner {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+}
+.activity-btn-spinner.spinning {
+  animation: spin 1s linear infinite;
+}
+.activity-badge {
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   現代活動與任務中心 (Activity & Task Center)
+   ========================================================================== */
+.activity-drawer {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 400px;
+  max-height: 580px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-drawer);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.97);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+}
+.activity-drawer.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.activity-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg);
+}
+.activity-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+.activity-subtitle {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.activity-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-body {
+  padding: 14px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+}
+
+.activity-empty {
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* 任務卡片 (Task Card) */
+.activity-task-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease, opacity 0.3s ease;
+}
+.activity-task-card.task-finished {
+  border-color: var(--color-success);
+}
+.task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.task-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-download { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+.badge-update { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+.badge-convert-jp { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+.badge-convert-ai { background: rgba(139, 92, 246, 0.15); color: #8B5CF6; }
+
+.task-title-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.task-phase-desc {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 任務進度條 */
+.task-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.task-progress-track {
+  flex: 1;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.task-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.task-progress-fill.success {
+  background: var(--color-success);
+}
+.task-percent-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  min-width: 34px;
+  text-align: right;
+}
+
+/* 折疊式除錯日誌 (Raw Logs Drawer Footer) */
+.activity-footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+.activity-log-toggle {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+.activity-log-toggle:hover {
+  color: var(--color-primary);
+}
+.activity-raw-logs {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #0D1117;
+  color: #C9D1D9;
+}
+.activity-raw-logs.open {
+  max-height: 200px;
+}
+.raw-logs-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #161B22;
+  border-bottom: 1px solid #30363D;
+}
+.raw-logs-content {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-y: auto;
+  max-height: 155px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 小說卡片就地微進度條 (Novel Card In-place Progress) */
+.card-converting-indicator {
+  display: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.card-converting-indicator.active {
+  display: flex;
+}
+

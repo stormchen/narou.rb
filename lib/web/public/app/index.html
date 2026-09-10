@@ -62,8 +62,20 @@
           </svg>
         </button>
 
+        <!-- 頂部活動中心按鈕 -->
+        <button class="btn-icon" id="btnHeaderActivity" title="檢視後台任務與進度" style="position: relative;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/>
+          </svg>
+          <span class="header-activity-dot" id="headerActivityDot"></span>
+        </button>
+
         <a href="/legacy" class="btn btn-ghost btn-sm" title="切換回原本的舊版介面">切換舊版</a>
       </div>
+    </div>
+    <!-- 頂部全域細緻進度條 (平時 0 高度隱藏，有任務時優雅滑出) -->
+    <div class="global-progress-wrap" id="globalProgressWrap">
+      <div class="global-progress-bar" id="globalProgressBar"></div>
     </div>
   </header>
 
@@ -172,35 +184,66 @@
     </button>
   </aside>
 
-  <!-- 右下角懸浮任務狀態泡泡 -->
-  <div class="floating-queue-btn" id="btnToggleConsole">
-    <svg id="queueSpinnerIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
-    </svg>
-    <span>終端日誌</span>
-    <span class="queue-badge" id="queueCountBadge">0</span>
+  <!-- 右下角現代化任務活動中心懸浮按鈕 -->
+  <div class="floating-activity-btn" id="btnToggleActivity" title="點擊檢視背景任務與進度">
+    <div class="activity-btn-spinner" id="activityBtnSpinner">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+    </div>
+    <span id="activityBtnLabel">任務進行中</span>
+    <span class="activity-badge" id="activityBadge">0</span>
   </div>
 
-  <!-- 終端日誌抽屜 (Console Drawer) -->
-  <aside class="console-drawer" id="consoleDrawer">
-    <div class="console-header">
-      <div class="console-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
-        </svg>
-        <span>Narou 即時後台任務與日誌監控</span>
+  <!-- 現代活動與任務中心 (Activity & Task Center) -->
+  <aside class="activity-drawer" id="activityDrawer">
+    <div class="activity-header">
+      <div class="activity-title-group">
+        <div class="activity-title">任務與活動中心</div>
+        <div class="activity-subtitle" id="activityStatusSummary">目前無進行中任務</div>
       </div>
-      <div style="display: flex; gap: 6px; align-items: center;">
-        <button class="btn btn-ghost btn-sm" id="btnClearConsole" title="清空螢幕">清空</button>
-        <button class="btn btn-ghost btn-sm" id="btnCopyConsole" title="複製日誌">複製</button>
-        <button class="btn-icon btn-sm" id="btnCloseConsole" style="background: transparent; border: none; color: #8B949E;">
+      <div class="activity-header-actions">
+        <button class="btn-icon btn-sm" id="btnCancelAllTasks" title="中止所有排隊中的任務" style="color: var(--color-danger); border: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="16" height="16" x="4" y="4" rx="2"/>
+          </svg>
+        </button>
+        <button class="btn-icon btn-sm" id="btnCloseActivity" style="border: none;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
           </svg>
         </button>
       </div>
     </div>
-    <div class="console-body" id="consoleLogs">Narou Web UI 已連線就緒。日誌將即時串流至此...</div>
+
+    <!-- 任務清單容器 -->
+    <div class="activity-body" id="activityTaskList">
+      <div class="activity-empty" id="activityEmptyState">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; margin-bottom: 8px;">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <div>所有後台任務均已完成</div>
+        <div style="font-size: 11px; opacity: 0.6; margin-top: 4px;">此處將即時呈現下載、更新與轉檔視覺進度</div>
+      </div>
+    </div>
+
+    <!-- 底部進階除錯日誌折疊區（平時收合，非必要不打擾） -->
+    <div class="activity-footer">
+      <div class="activity-log-toggle" id="btnToggleRawLogs">
+        <span>檢視技術日誌細節</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="iconRawLogsArrow">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+      <div class="activity-raw-logs" id="activityRawLogs">
+        <div class="raw-logs-actions">
+          <button class="btn btn-ghost btn-sm" id="btnClearRawLogs">清空</button>
+          <button class="btn btn-ghost btn-sm" id="btnCopyRawLogs">複製</button>
+        </div>
+        <pre class="raw-logs-content" id="rawLogsContent">系統就緒...</pre>
+      </div>
+    </div>
   </aside>
 
   <!-- 首次使用設定引導精靈 (Setup Wizard Modal) -->
