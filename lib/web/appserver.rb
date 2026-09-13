@@ -561,11 +561,27 @@ class Narou::AppServer < Sinatra::Base
   end
 
   get "/novels/:id/download" do
+    id = params[:id]
     device = Narou.get_device
     ext = device ? device.ebook_file_ext : ".epub"
-    paths = Narou.get_ebook_file_paths(@id, ext)
-    if !paths.empty? && File.exist?(paths[0])
-      send_file(paths[0], filename: File.basename(paths[0]), type: "application/octet-stream")
+    paths = Narou.get_ebook_file_paths(id, ext)
+    target_path = paths&.find { |p| File.exist?(p) }
+
+    # 若因為 AI 翻譯書名導致標準日文檔名找不到，直接在小說目錄尋找最新生成的電子書檔案
+    unless target_path
+      dir = Downloader.get_novel_data_dir_by_target(id)
+      if dir && Dir.exist?(dir)
+        candidates = Dir.glob(File.join(dir, "*#{ext}"))
+        target_path = candidates.max_by { |f| File.mtime(f) } if candidates.any?
+        unless target_path
+          candidates = Dir.glob(File.join(dir, "*.{epub,mobi,txt}"))
+          target_path = candidates.max_by { |f| File.mtime(f) } if candidates.any?
+        end
+      end
+    end
+
+    if target_path && File.exist?(target_path)
+      send_file(target_path, filename: File.basename(target_path), type: "application/octet-stream")
     else
       not_found
     end
