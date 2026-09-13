@@ -8,7 +8,7 @@ require_relative "base"
 module Narou
   module Translator
     class OpenAIEngine < Base
-      attr_reader :endpoint, :api_key, :model, :retry_delay
+      attr_reader :endpoint, :api_key, :model, :retry_delay, :character_names
 
       def initialize(options = {})
         super
@@ -16,6 +16,7 @@ module Narou
         @api_key = options[:api_key] || ""
         @model = options[:model] || "sakura-13b"
         @retry_delay = options.key?(:retry_delay) ? options[:retry_delay].to_f : 2.0
+        @character_names = options[:character_names]
         is_sakura = @model.to_s.downcase.include?("sakura")
         if is_sakura
           user_chunk_size = options[:chunk_size].to_i
@@ -40,13 +41,17 @@ module Narou
       def build_messages(text)
         utf8_text = text.to_s.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "")
         if @model.to_s.downcase.include?("sakura")
+          sakura_prompt = "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成繁体中文，并联系上下文正确使用词汇。保留所有__TAG_开头的特殊标记。"
+          if @character_names&.any?
+            sakura_prompt += "\n" + @character_names.prompt_fragment
+          end
           [
-            { role: "system", content: "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成繁体中文，并联系上下文正确使用词汇。保留所有__TAG_开头的特殊标记。" },
+            { role: "system", content: sakura_prompt },
             { role: "user", content: "将下面的日文文本翻译成繁体中文：\n#{utf8_text}" }
           ]
         else
           [
-            { role: "system", content: system_prompt },
+            { role: "system", content: system_prompt(character_names: @character_names) },
             { role: "user", content: utf8_text }
           ]
         end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "translator/tag_protector"
+require_relative "translator/character_names"
 require_relative "translator/cache_manager"
 require_relative "translator/base"
 require_relative "translator/openai_engine"
@@ -25,12 +26,13 @@ module Narou
     class Manager
       include Translator
 
-      attr_reader :options, :archive_path, :engine, :cache_manager, :process_lock
+      attr_reader :options, :archive_path, :engine, :cache_manager, :process_lock, :character_names
 
       def initialize(options, archive_path)
         @options = options || {}
         @archive_path = archive_path
         @cache_manager = CacheManager.new(@archive_path)
+        @character_names = CharacterNames.new(@archive_path).load
         @process_lock = ProcessLock.new(@archive_path)
         @engine = build_engine
       end
@@ -52,7 +54,8 @@ module Narou
           api_key: @options["translate.api_key"],
           model: @options["translate.model"],
           chunk_size: @options["translate.chunk_size"],
-          max_retries: @options["translate.max_retries"]
+          max_retries: @options["translate.max_retries"],
+          character_names: @character_names
         }.compact
 
         case engine_type
@@ -71,7 +74,14 @@ module Narou
 
         encoded, tag_map = TagProtector.encode(text)
         translated = @engine.translate(encoded, context: { type: type })
-        TagProtector.decode(translated, tag_map)
+        result = TagProtector.decode(translated, tag_map)
+        result = @character_names.apply_replacements(result) if @character_names.any?
+        result
+      end
+
+      def apply_name_fix_to_cache
+        return 0 unless enabled? && @character_names.any?
+        @character_names.apply_to_cache
       end
 
       def translate_section(subinfo, section, force_retranslate: false)

@@ -8,13 +8,14 @@ require_relative "base"
 module Narou
   module Translator
     class GeminiEngine < Base
-      attr_reader :api_key, :model, :retry_delay
+      attr_reader :api_key, :model, :retry_delay, :character_names
 
       def initialize(options = {})
         super
         @api_key = options[:api_key] || ""
         @model = options[:model] || "gemini-1.5-flash"
         @retry_delay = (options[:retry_delay] || 2.0).to_f
+        @character_names = options[:character_names]
       end
 
       def request_uri
@@ -36,7 +37,7 @@ module Narou
           contents: [
             {
               role: "user",
-              parts: [{ text: "#{system_prompt}\n\n【待翻譯日文如下】：\n#{text}" }]
+              parts: [{ text: "#{system_prompt(character_names: @character_names)}\n\n【待翻譯日文如下】：\n#{text}" }]
             }
           ],
           generationConfig: {

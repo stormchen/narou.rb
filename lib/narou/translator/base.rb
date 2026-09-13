@@ -48,8 +48,8 @@ module Narou
         chunks
       end
 
-      def system_prompt
-        <<~PROMPT.strip
+      def system_prompt(character_names: nil)
+        prompt = <<~PROMPT.strip
           你是一位精通日本網路小說（Web 小說、網文流派）的資深輕小說翻譯家。請將輸入的日文網文文本流暢地翻譯成【台灣正體中文 / 繁體中文（zh-TW）】。請嚴格遵守以下網文翻譯原則：
 
           【翻譯原則】：
@@ -62,6 +62,10 @@ module Narou
              - 保留原始文本的段落換行、空格與排版結構。
           6. 輸出規範：僅輸出翻譯後的正體中文正文，絕對不要包含任何前言、後記、個人說明、問候或翻譯注釋。
         PROMPT
+        if character_names&.any?
+          prompt += "\n" + character_names.prompt_fragment
+        end
+        prompt
       end
     end
   end
