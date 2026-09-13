@@ -482,6 +482,49 @@ class Narou::AppServer < Sinatra::Base
   end
 
 
+  # 取得角色名稱對照表 (JSON API)
+  get "/api/novels/:id/character_names" do
+    id = params[:id]
+    data = Downloader.get_data_by_target(id)
+    novel_setting = NovelSetting.new(id, true, true)
+    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path).load
+    json({
+      title: data ? data["title"] : "",
+      characters: cn.characters
+    })
+  end
+
+  # 儲存角色名稱對照表 (JSON API)
+  post "/api/novels/:id/character_names" do
+    id = params[:id]
+    request.body.rewind
+    body_data = JSON.parse(request.body.read) rescue {}
+    params_char_names = body_data["characters"] || body_data["character_names"] || []
+
+    novel_setting = NovelSetting.new(id, true, true)
+    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path)
+    if params_char_names.is_a?(Array)
+      params_char_names.each do |entry|
+        original = (entry["original"] || "").strip
+        translation = (entry["translation"] || "").strip
+        next if original.empty? && translation.empty?
+        alternatives = entry["alternatives"]
+        if alternatives.is_a?(String)
+          alternatives = alternatives.split(/[,、\s]+/).map(&:strip).reject(&:empty?)
+        elsif !alternatives.is_a?(Array)
+          alternatives = []
+        end
+        cn.characters << {
+          "original" => original,
+          "translation" => translation,
+          "alternatives" => alternatives
+        }
+      end
+    end
+    cn.save
+    json({ success: true, count: cn.characters.size })
+  end
+
   get "/novels/:id/download" do
     device = Narou.get_device
     ext = device ? device.ebook_file_ext : ".epub"
