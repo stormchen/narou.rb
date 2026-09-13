@@ -76,26 +76,35 @@ module Narou
         cache_dir = File.join(@archive_path, "translated_sections")
         return {} unless Dir.exist?(cache_dir)
 
-        target_translations = @characters.map { |c| c["translation"] }.compact
+        target_translations = @characters.map { |c| c["translation"] }.compact.reject(&:empty?)
+        return {} if target_translations.empty?
+
         known_alternatives = @characters.each_with_object({}) do |c, h|
           h[c["translation"]] = (c["alternatives"] || [])
         end
+
+        needed_lengths = target_translations.flat_map do |t|
+          len = t.chars.length
+          [len - 1, len, len + 1]
+        end.select { |l| l >= 2 }.uniq
 
         candidates = Hash.new { |h, k| h[k] = Hash.new(0) }
 
         Dir.glob(File.join(cache_dir, "*.yaml")).each do |path|
           next if path.end_with?("toc_translated.yaml")
-          
+
           data = load_yaml_file(path)
           next unless data.is_a?(Hash) && data["data"].is_a?(Hash)
-          
+
           texts = extract_texts_from_cache(data["data"])
           texts.each do |text|
-            terms = extract_chinese_terms(text)
+            terms = extract_chinese_terms(text, needed_lengths)
             terms.each do |term|
               target_translations.each do |target|
-                next if term == target || known_alternatives[target].include?(term)
-                
+                next if term == target
+                next if term.include?(target)
+                next if known_alternatives[target]&.include?(term)
+
                 if Levenshtein.distance(term, target) == 1
                   candidates[target][term] += 1
                 end
@@ -109,7 +118,7 @@ module Narou
           next if variants.empty?
           result[target] = variants.map { |v, count| { variant: v, count: count } }.sort_by { |v| -v[:count] }
         end
-        
+
         result
       end
       
@@ -183,8 +192,23 @@ module Narou
         texts
       end
       
-      def extract_chinese_terms(text)
-        text.to_s.scan(/\p{Han}{2,4}/).uniq
+      def extract_chinese_terms(text, lengths = [2, 3, 4])
+        return [] if text.nil? || text.empty?
+        valid_lengths = lengths.select { |l| l >= 2 }.uniq
+        return [] if valid_lengths.empty?
+
+        terms = []
+        text.to_s.scan(/\p{Han}+/) do |chunk|
+          chars = chunk.chars
+          chunk_len = chars.length
+          valid_lengths.each do |target_len|
+            next if chunk_len < target_len
+            (0..(chunk_len - target_len)).each do |i|
+              terms << chars[i, target_len].join
+            end
+          end
+        end
+        terms
       end
     end
   end
