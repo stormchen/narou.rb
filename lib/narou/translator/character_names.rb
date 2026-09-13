@@ -54,22 +54,25 @@ module Narou
       def replacement_pairs
         pairs = []
         @characters.each do |char|
-          correct = char["translation"]
+          correct = char["translation"].to_s.strip
+          next if correct.empty?
           (char["alternatives"] || []).each do |wrong|
-            pairs << [wrong, correct]
+            w = wrong.to_s.strip
+            next if w.empty? || w == correct
+            pairs << [w, correct]
           end
         end
-        pairs
+        pairs.uniq.sort_by { |wrong, _| -wrong.length }
       end
       
       def apply_replacements(text)
         return text if text.nil? || text.empty?
-        
-        result = text.dup
-        replacement_pairs.each do |wrong, correct|
-          result.gsub!(wrong, correct)
-        end
-        result
+        pairs = replacement_pairs
+        return text if pairs.empty?
+
+        dict = pairs.to_h
+        pattern = Regexp.union(dict.keys.map { |k| Regexp.new(Regexp.escape(k)) })
+        text.gsub(pattern, dict)
       end
       
       def scan_inconsistencies

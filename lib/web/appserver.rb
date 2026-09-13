@@ -475,10 +475,45 @@ class Narou::AppServer < Sinatra::Base
 
   # 套用名稱修正到快取 (AJAX)
   post "/novels/:id/apply_name_fix" do
-    novel_setting = NovelSetting.new(@id, true, true)
-    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path).load
+    id = params[:id]
+    request.body.rewind
+    body_data = JSON.parse(request.body.read) rescue {}
+    params_char_names = body_data["characters"] || body_data["character_names"]
+
+    novel_setting = NovelSetting.new(id, true, true)
+    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path)
+
+    if params_char_names.is_a?(Array) && !params_char_names.empty?
+      # 前端傳入了畫面上的最新角色資料，先自動儲存並套用
+      cn.characters.clear
+      params_char_names.each do |entry|
+        original = (entry["original"] || "").strip
+        translation = (entry["translation"] || "").strip
+        next if original.empty? && translation.empty?
+        alternatives = entry["alternatives"]
+        if alternatives.is_a?(String)
+          alternatives = alternatives.split(/[,、\s]+/).map(&:strip).reject(&:empty?)
+        elsif !alternatives.is_a?(Array)
+          alternatives = []
+        end
+        cn.characters << {
+          "original" => original,
+          "translation" => translation,
+          "alternatives" => alternatives
+        }
+      end
+      cn.save
+    else
+      # 未傳入時，從檔案載入
+      cn.load
+    end
+
     modified = cn.apply_to_cache
-    json({ modified: modified })
+    json({
+      modified: modified,
+      characters_count: cn.characters.size,
+      replacement_pairs_count: cn.replacement_pairs.size
+    })
   end
 
 
