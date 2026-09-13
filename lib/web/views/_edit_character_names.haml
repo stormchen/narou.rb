@@ -1,0 +1,185 @@
+:javascript
+  local_initialize_functions.push(function($) {
+    var tooltip_opt = {
+      animation: false,
+      container: "body",
+    };
+
+    // Character names panel - remove row
+    $(".btn-charname-remove").on("click", function(e) {
+      e.preventDefault();
+      if ($(".character-name-tr").size() === 1) {
+        $("#btn-charname-add").trigger("click");
+      }
+      $(this).tooltip("destroy").closest("tr").remove();
+    });
+
+    // Clone blank row for adding
+    var $blank_char_tr = $(".character-name-tr:last").clone(true);
+    $("#btn-charname-add").on("click", function(e) {
+      e.preventDefault();
+      var $clone = $blank_char_tr.clone(true);
+      $clone.find("button").tooltip(tooltip_opt);
+      $(".character-name-tr:last").after($clone);
+      $(this).tooltip("hide");
+    });
+
+    // Scan for inconsistencies (AJAX)
+    $("#btn-scan-names").on("click", function(e) {
+      e.preventDefault();
+      var $btn = $(this);
+      $btn.prop("disabled", true).text("掃描中...");
+
+      // Collect current form data for character names
+      var formData = [];
+      $(".character-name-tr").each(function() {
+        var original = $(this).find("input[name$='[original]']").val() || "";
+        var translation = $(this).find("input[name$='[translation]']").val() || "";
+        var alternatives = $(this).find("input[name$='[alternatives]']").val() || "";
+        if (original.trim() || translation.trim()) {
+          formData.push({
+            original: original.trim(),
+            translation: translation.trim(),
+            alternatives: alternatives.trim()
+          });
+        }
+      });
+
+      $.ajax({
+        url: "/novels/#{@id}/scan_names",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ character_names: formData }),
+        success: function(data) {
+          var $results = $("#scan-results");
+          var $list = $results.find(".scan-results-list");
+          $list.empty();
+
+          if (!data.results || Object.keys(data.results).length === 0) {
+            $list.append('<p class="text-muted">未找到不一致的變體。</p>');
+            $("#btn-add-variants").hide();
+          } else {
+            $.each(data.results, function(target, variants) {
+              var html = '<div class="scan-group" data-target="' + target + '">';
+              html += '<strong>"' + target + '" 的疑似變體：</strong><br>';
+              $.each(variants, function(i, v) {
+                html += '<label class="checkbox-inline" style="margin-left:15px">';
+                html += '<input type="checkbox" class="scan-variant-cb" data-variant="' + v.variant + '" data-target="' + target + '" checked> ';
+                html += v.variant + ' (出現 ' + v.count + ' 次)';
+                html += '</label>';
+              });
+              html += '</div>';
+              $list.append(html);
+            });
+            $("#btn-add-variants").show();
+          }
+          $results.show();
+        },
+        error: function() {
+          alert("掃描失敗，請稍後再試。");
+        },
+        complete: function() {
+          $btn.prop("disabled", false).text("掃描不一致");
+        }
+      });
+    });
+
+    // Add selected variants to their respective character rows
+    $("#btn-add-variants").on("click", function(e) {
+      e.preventDefault();
+      $(".scan-variant-cb:checked").each(function() {
+        var variant = $(this).data("variant");
+        var target = $(this).data("target");
+
+        // Find the row with matching translation
+        $(".character-name-tr").each(function() {
+          var $row = $(this);
+          var translation = $row.find("input[name$='[translation]']").val() || "";
+          if (translation.trim() === target) {
+            var $altInput = $row.find("input[name$='[alternatives]']");
+            var current = ($altInput.val() || "").trim();
+            if (current === "") {
+              $altInput.val(variant);
+            } else if (current.indexOf(variant) === -1) {
+              $altInput.val(current + ", " + variant);
+            }
+          }
+        });
+      });
+      $("#scan-results").hide();
+    });
+
+    // Apply name fix to cache (AJAX)
+    $("#btn-apply-name-fix").on("click", function(e) {
+      e.preventDefault();
+      if (!confirm("此操作將根據已儲存的角色名稱表修正所有快取中的錯誤譯名。\n\n請先確認已儲存設定。\n此操作不可逆，是否繼續？")) return;
+      var $btn = $(this);
+      $btn.prop("disabled", true).text("套用中...");
+      $.ajax({
+        url: "/novels/#{@id}/apply_name_fix",
+        method: "POST",
+        success: function(data) {
+          alert("完成！已修正 " + data.modified + " 個快取檔案。");
+        },
+        error: function() {
+          alert("套用失敗，請稍後再試。");
+        },
+        complete: function() {
+          $btn.prop("disabled", false).text("套用修正到快取");
+        }
+      });
+    });
+
+    $("#character-names-panel [data-toggle=remove-tooltip]").tooltip(tooltip_opt);
+  });
+
+#character-names-panel.panel.panel-success.panel-settings
+  .panel-heading
+    %b= h @novel_title
+    的角色名稱對照表
+  .panel-body
+    ・設定角色名稱對照表，翻譯時會自動注入 AI 提示詞並在翻譯後自動替換錯誤變體
+    %br
+    ・「已知變體」欄位填入 AI 可能產生的錯誤譯名，多個變體用逗號分隔
+    %br
+    ・點擊「掃描不一致」可自動從已翻譯的快取中找出可能的錯誤變體
+  .list-group
+    .list-group-item.form-group
+      .list-group-item-text
+        %table#character-names-table.table
+          %thead
+            %tr
+              %td 日文原名
+              %td 正確譯名
+              %td 已知變體（逗號分隔）
+              %td &nbsp;
+          %tbody
+            - ((@character_names || []) + [{"original" => "", "translation" => "", "alternatives" => []}]).each do |char|
+              %tr.character-name-tr
+                %td
+                  %input{type:"text", name:"character_names[][original]", value: char["original"], class:"form-control", placeholder:"例：ルカ"}
+                %td
+                  %input{type:"text", name:"character_names[][translation]", value: char["translation"], class:"form-control", placeholder:"例：露卡"}
+                %td
+                  %input{type:"text", name:"character_names[][alternatives]", value: (char["alternatives"] || []).join(", "), class:"form-control", placeholder:"例：路卡, 盧卡"}
+                %td
+                  %button.btn-charname-remove.btn.btn-default(data-toggle="remove-tooltip" title="刪除" data-placement="right")
+                    %span.glyphicon.glyphicon-remove
+        %div(style="margin-top: 10px")
+          %button#btn-charname-add.btn.btn-default(data-toggle="tooltip" title="新增一行" data-placement="right")
+            %span.glyphicon.glyphicon-plus
+            新增角色
+          %button#btn-scan-names.btn.btn-info(style="margin-left: 10px")
+            %span.glyphicon.glyphicon-search
+            掃描不一致
+          %button#btn-apply-name-fix.btn.btn-warning(style="margin-left: 10px")
+            %span.glyphicon.glyphicon-wrench
+            套用修正到快取
+
+  #scan-results(style="display:none; padding: 15px")
+    .alert.alert-info
+      %strong 掃描結果
+    .scan-results-list
+    %button#btn-add-variants.btn.btn-success(style="display:none; margin-top: 10px")
+      %span.glyphicon.glyphicon-plus
+      加入已勾選的變體

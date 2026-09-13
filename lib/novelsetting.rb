@@ -8,13 +8,15 @@ require "fileutils"
 require_relative "ini"
 require_relative "downloader"
 require_relative "converterbase"
+require_relative "narou/translator/character_names"
 
 class NovelSetting
   INI_NAME = "setting.ini"
   INI_ERB_BINARY_VERSION = 1.2
   REPLACE_NAME = "replace.txt"
+  CHARACTER_NAMES_FILE = "character_names.yaml"
 
-  attr_accessor :id, :author, :title, :archive_path, :replace_pattern, :settings
+  attr_accessor :id, :author, :title, :archive_path, :replace_pattern, :settings, :character_names_data
 
   #
   # データベースに登録されている小説の設定を取得する
@@ -52,6 +54,7 @@ class NovelSetting
     @ignore_force = ignore_force
     @ignore_default = ignore_default
     @replace_pattern = []
+    @character_names_data = []
     @settings = {}
   end
 
@@ -219,6 +222,25 @@ class NovelSetting
   def save_replace_pattern
     replace_txt_path = File.join(@archive_path, REPLACE_NAME)
     Narou.write_replace_txt(replace_txt_path, @replace_pattern)
+  end
+
+  #
+  # character_names.yaml の角色名稱對照表を讀み込む
+  #
+  def load_character_names
+    @character_names_data = []
+    cn = Narou::Translator::CharacterNames.new(@archive_path).load
+    @character_names_data = cn.characters
+    @character_names_data
+  end
+
+  #
+  # character_names.yaml に角色名稱對照表を書き戻す
+  #
+  def save_character_names
+    cn = Narou::Translator::CharacterNames.new(@archive_path)
+    cn.characters.replace(@character_names_data)
+    cn.save
   end
 
   def self.get_original_settings

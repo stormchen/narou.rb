@@ -74,7 +74,8 @@
       %input(type="submit" value="儲存設定" class="btn btn-info" style="float:none")
 
     %p.panel-settings-link
-      前往 <a href="#replace-panel" data-move-to="#replace-panel">字詞替換設定</a>
+      前往 <a href="#replace-panel" data-move-to="#replace-panel">字詞替換設定</a> |
+      <a href="#character-names-panel" data-move-to="#character-names-panel">角色名稱對照表</a>
 
     .container-settings
       #setting-panel.panel.panel-info.panel-settings
@@ -161,6 +162,7 @@
                "・變更設定後需重新執行轉換方可生效",
                "・儲存後原 replace.txt 中的註解將會被清除"] }
       = haml :_edit_replace_txt, locals: { replace_panel_var: replace_panel_var }
+      = haml :_edit_character_names, locals: {}
 
       %input(type="submit" value="儲存設定" class="btn btn-info" style="float:none")
 

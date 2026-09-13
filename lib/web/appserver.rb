@@ -374,6 +374,7 @@ class Narou::AppServer < Sinatra::Base
     @force_settings = NovelSetting.load_force_settings
     @default_settings = NovelSetting.load_default_settings
     @replace_pattern = @novel_setting.load_replace_pattern
+    @character_names = @novel_setting.load_character_names
   end
 
   post "/novels/:id/setting" do
@@ -413,6 +414,26 @@ class Narou::AppServer < Sinatra::Base
     end
     @novel_setting.save_replace_pattern
 
+    # 角色名稱對照表保存
+    @novel_setting.character_names_data.clear
+    params_char_names = params["character_names"]
+    if params_char_names.kind_of?(Array)
+      params_char_names.each do |entry|
+        original = (entry["original"] || "").strip
+        translation = (entry["translation"] || "").strip
+        next if original.empty? && translation.empty?
+        alternatives_str = (entry["alternatives"] || "").strip
+        alternatives = alternatives_str.empty? ? [] : alternatives_str.split(/[,、\s]+/).map(&:strip).reject(&:empty?)
+        @novel_setting.character_names_data << {
+          "original" => original,
+          "translation" => translation,
+          "alternatives" => alternatives
+        }
+      end
+    end
+    @novel_setting.save_character_names
+    @character_names = @novel_setting.character_names_data
+
     if @error_list.empty?
       session[:alert] = [ "儲存完成", "success" ]
     else
@@ -425,6 +446,41 @@ class Narou::AppServer < Sinatra::Base
   get "/novels/:id/setting" do
     haml :"novels/setting"
   end
+
+  # 角色名稱掃描不一致 (AJAX)
+  post "/novels/:id/scan_names" do
+    request.body.rewind
+    body_data = JSON.parse(request.body.read) rescue {}
+    params_char_names = body_data["character_names"]
+    
+    novel_setting = NovelSetting.new(@id, true, true)
+    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path)
+    if params_char_names.kind_of?(Array)
+      params_char_names.each do |entry|
+        original = (entry["original"] || "").strip
+        translation = (entry["translation"] || "").strip
+        next if original.empty? && translation.empty?
+        alternatives_str = (entry["alternatives"] || "").strip
+        alternatives = alternatives_str.empty? ? [] : alternatives_str.split(/[,、\s]+/).map(&:strip).reject(&:empty?)
+        cn.characters << {
+          "original" => original,
+          "translation" => translation,
+          "alternatives" => alternatives
+        }
+      end
+    end
+    results = cn.scan_inconsistencies
+    json({ results: results })
+  end
+
+  # 套用名稱修正到快取 (AJAX)
+  post "/novels/:id/apply_name_fix" do
+    novel_setting = NovelSetting.new(@id, true, true)
+    cn = Narou::Translator::CharacterNames.new(novel_setting.archive_path).load
+    modified = cn.apply_to_cache
+    json({ modified: modified })
+  end
+
 
   get "/novels/:id/download" do
     device = Narou.get_device
