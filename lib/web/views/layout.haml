@@ -64,6 +64,6 @@
           this($);
         });
       });
-    - if env["PATH_INFO"] == "/"
+    - if env["PATH_INFO"] == "/" || env["PATH_INFO"] == "/legacy"
       %script{:src => "/resources/narou.ui.js?_=#{Narou::VERSION}"}
 
